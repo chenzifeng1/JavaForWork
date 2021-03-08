@@ -1,4 +1,4 @@
-package cas.reentrantlock;
+package cas.juc_synchronization_lock.aqs;
 
 import config.StaticValue;
 
@@ -10,25 +10,24 @@ import java.util.concurrent.CountDownLatch;
  * @Author: czf
  * @Description: CountDownLatch 学习使用
  * Latch 门栓
- *
- *
  * @Date: 2021/3/4 21:59
  * @Version: 1.0
  **/
 
 public class CountDownLatchTest {
 
-    public static void usingCountDown(){
+    public static void usingCountDown() {
         Thread[] threads = new Thread[StaticValue.HUNDRED];
         CountDownLatch countDownLatch = new CountDownLatch(threads.length);
 
         for (int i = 0; i < threads.length; i++) {
-            threads[i] = new Thread(()->{
+            threads[i] = new Thread(() -> {
                 int result = 0;
                 for (int j = 0; j < 10000; j++) {
-                    result+=j;
+                    result += j;
                 }
                 //倒数一下
+                System.out.println(Thread.currentThread().getName() + " end");
                 countDownLatch.countDown();
             });
         }
@@ -47,15 +46,16 @@ public class CountDownLatchTest {
     }
 
 
-    public static void usingJoin(){
+    public static void usingJoin() {
         Thread[] threads = new Thread[StaticValue.HUNDRED];
 
         for (int i = 0; i < threads.length; i++) {
-            threads[i]=new Thread(()->{
+            threads[i] = new Thread(() -> {
                 int result = 0;
                 for (int j = 0; j < 10000; j++) {
-                    result+=j;
+                    result += j;
                 }
+                System.out.println(Thread.currentThread().getName() + " end");
             });
         }
         for (int i = 0; i < threads.length; i++) {
@@ -63,6 +63,7 @@ public class CountDownLatchTest {
         }
         for (int i = 0; i < threads.length; i++) {
             try {
+                System.out.println(Thread.currentThread().getName()+" join");
                 threads[i].join();
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -71,4 +72,9 @@ public class CountDownLatchTest {
         System.out.println("end join");
     }
 
+
+    public static void main(String[] args) {
+//        usingCountDown();
+        usingJoin();
+    }
 }

@@ -1,8 +1,7 @@
-package cas.reentrantlock;
+package cas.juc_synchronization_lock.reentrantlock;
 
 import config.StaticValue;
 
-import java.sql.Time;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 

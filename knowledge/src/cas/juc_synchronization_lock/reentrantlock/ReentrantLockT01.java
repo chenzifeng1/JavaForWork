@@ -1,7 +1,6 @@
-package cas.reentrantlock;
+package cas.juc_synchronization_lock.reentrantlock;
 
 import config.StaticValue;
-import jdk.dynalink.beans.StaticClass;
 
 import java.util.concurrent.TimeUnit;
 

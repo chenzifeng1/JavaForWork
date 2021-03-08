@@ -1,4 +1,4 @@
-package cas.reentrantlock;
+package cas.juc_synchronization_lock.reentrantlock;
 
 /**
  * @ProjectName: spring-security
