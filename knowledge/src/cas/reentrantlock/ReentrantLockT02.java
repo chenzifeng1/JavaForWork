@@ -1,4 +1,4 @@
-package cas.juc_synchronization_lock.reentrantlock;
+package cas.reentrantlock;
 
 import config.StaticValue;
 

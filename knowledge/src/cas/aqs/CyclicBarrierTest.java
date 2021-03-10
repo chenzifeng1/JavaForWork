@@ -1,13 +1,13 @@
-package cas.juc_synchronization_lock.aqs;
+package cas.aqs;
+
 
 import config.StaticValue;
-
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
 /**
  * @ProjectName: knowledge
- * @Package: cas.juc_synchronization_lock.reentrantlock
+ * @Package: cas.reentrantlock
  * @ClassName: CyclicBarrierTest
  * @Author: czf
  * @Description: 循环栅栏 可以做到线程控制

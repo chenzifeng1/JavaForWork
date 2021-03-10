@@ -1,4 +1,4 @@
-package cas.juc_synchronization_lock.aqs;
+package cas.aqs;
 
 import java.util.concurrent.Exchanger;
 

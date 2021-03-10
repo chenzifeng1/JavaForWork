@@ -1,4 +1,4 @@
-package cas.juc_synchronization_lock.aqs;
+package cas.aqs;
 
 import utils.TimeUtils;
 
@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @ProjectName: knowledge
- * @Package: cas.juc_synchronization_lock.reentrantlock
+ * @Package: cas.reentrantlock
  * @ClassName: PhaserTest
  * @Author: czf
  * @Description: 遗传算法 可以使用
