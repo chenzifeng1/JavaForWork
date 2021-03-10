@@ -22,7 +22,7 @@ public class MyContainer_1<T> {
 
     public static final int MAX = 10;
 
-    private int count = 1;
+    private int count = 0;
 
     private Object lockObj = new Object();
 
@@ -33,7 +33,7 @@ public class MyContainer_1<T> {
      * @param t
      */
     public synchronized void put(T t){
-        while (list.size()==MAX){
+        while (count==MAX){
             try {
                 this.wait();
             } catch (InterruptedException e) {
@@ -42,7 +42,15 @@ public class MyContainer_1<T> {
         }
         list.add(t);
         count++;
-        //通知消费者来消费元素
+        /*通知消费者来消费元素
+            这里有点问题： 生产者放入元素会通知所有的线程（包括生产者） 来争抢锁资源
+            但实际上没有必要叫醒生产者，只要叫醒消费者即可
+            所以这里最好指定唤醒线程的类型
+            做到：
+            生产者 -唤醒-> 消费者
+            消费者 -唤醒-> 生产者
+            见 {@link MyContainer_2}
+         */
         this.notifyAll();
     }
 
@@ -50,7 +58,7 @@ public class MyContainer_1<T> {
      * 消费者方法
      */
     public synchronized T get(){
-        while (list.size() == 0) {
+        while (count == 0) {
             try {
                 this.wait();
             } catch (InterruptedException e) {
@@ -63,6 +71,8 @@ public class MyContainer_1<T> {
         this.notifyAll();
         return t;
     }
+
+
 
 
     public static void main(String[] args) {
@@ -88,5 +98,10 @@ public class MyContainer_1<T> {
                 }
             },"product"+i).start();
         }
+    }
+
+
+    public int getCount() {
+        return count;
     }
 }
