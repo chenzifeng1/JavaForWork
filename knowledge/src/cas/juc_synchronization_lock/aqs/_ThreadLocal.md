@@ -42,3 +42,19 @@ WeakReference
 
 
 
+
+用途： 声明式事务，保证多个方法拿同一个Connection对象
+
+
+# java引用
+- 强
+- 软 
+  - 大对象的引用
+  - 常用对象的引用
+- 弱
+  - 缓存，没有容器引用指向的时候就需要清楚的缓存
+  - ThreadLocal
+  - WeakHashMap  
+- 虚
+  - 管理堆外内存
+
