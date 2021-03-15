@@ -1,4 +1,4 @@
-package cas.juc_synchronization_lock.aqs;
+package cas.juc_synchronization_lock.reference;
 
 import utils.TimeUtils;
 

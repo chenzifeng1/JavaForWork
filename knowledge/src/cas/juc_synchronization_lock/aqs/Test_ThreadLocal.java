@@ -22,14 +22,19 @@ public class Test_ThreadLocal {
         new Thread(()->{
             TimeUtils.timeUintSleep(3, TimeUnit.SECONDS);
             // 线程独有 因此在主线程设置的Person对象 在子线程拿不到对应的值
+            personThreadLocal.set(new Person(Thread.currentThread().getName()));
             System.out.println(personThreadLocal.get().getName());
+            personThreadLocal.set(new Person("czf"));
         }).start();
 
 
         new Thread(()->{
             TimeUtils.timeUintSleep(1, TimeUnit.SECONDS);
+            personThreadLocal.set(new Person(Thread.currentThread().getName()));
             personThreadLocal.get().setName("李四");
         }).start();
+
+
     }
 
 
