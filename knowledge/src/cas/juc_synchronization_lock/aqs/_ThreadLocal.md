@@ -33,6 +33,9 @@ public class ThreadLocal<T> {
   }
 }
 ```
+
+## set(T value)
+
 设置值 set(T value)：
  1. 获取当前线程t
  2. 以当前线程t为key，获取一个map，这个getMap的方法我们在下面会说到，这里知道获取到map是ThreadLocalMap (ThreadLocal的一个内部类)
@@ -106,18 +109,32 @@ ThreadLocalMap这个类中有个比较重要的属性： `private ThreadLocal.Th
 `int i = key.threadLocalHashCode & len - 1;` 然后把新的值放入table[i]中。一开始Entry数组被初始化为16.
 另外就是因为这个时根据hash值往里面插入，因此可能存在两个key存在冲突，这个还需要对应的解决冲突的办法。
 
-
-
-
 map = getMap -> getMap : Thread.currentThread.map  # 这个map是线程Thread的属性,所以我们获取的是当前线程
 的Map对象  
 map.set(ThreadLocal->this,T->value)
 也就说我们使用ThreadLocal的时候，是每个线程都有自己的一个Map对象来存有ThreadLocal对象的属性
+## get()
+get方法在了解了ThreadLocal的set方法之后，其实需要注意的地方就只有ThreadLocalMap的getEntry这个方法了。
+我们先看一些get()方法都做了那些事：
+1. 与set相同，根据当前线程拿到Map
+2. 如果map不为空，再根据ThreadLocal对象拿到线程中对应的Entry
+3. 如果map为空，则返回设置的初始化值，这个初始化值其实就是null。因为Entry是弱引用类型，所以GC会在没有其他强引用指向Entry对象时，将其回收。
+看一下getEntry这个方法的实现。
+```java
+public class ThreadLocal<T> {
 
+    private ThreadLocal.ThreadLocalMap.Entry getEntry(ThreadLocal<?> key) {
+        int i = key.threadLocalHashCode & this.table.length - 1;
+        ThreadLocal.ThreadLocalMap.Entry e = this.table[i];
+        return e != null && e.get() == key ? e : this.getEntryAfterMiss(key, i, e);
+    }
 
-
-
-
+}
+```
+其实也很简单，就是根据key的hash值算出对应的数组下标i，如果i对应的元素是空的或者是值与给定的key不一样，
+那么就会调用解决冲突的方法`getEntryAfterMiss`来找下一个可能的索引。这里是因为在加入这个元素的时候，可能第一次插入时。
+对应的位置已经存在元素了，发生了hash冲突。所以，要插入的元素可能被插入到了解决冲突之后的位置。  
+    至于`setInitialValue()`方法，其实就是为当前线程初始化ThreadLocalMap这个变量
 
 牢记：使用ThreadLocal 对象不使用时务必进行remove操作,
 ```java
