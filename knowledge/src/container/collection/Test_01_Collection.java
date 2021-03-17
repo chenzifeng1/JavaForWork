@@ -1,4 +1,4 @@
-package container;
+package container.collection;
 
 import cas.juc_synchronization_lock.reference.M;
 
