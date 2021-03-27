@@ -2,10 +2,8 @@ package container.map;
 
 import config.StaticValue;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @Author: czf
@@ -18,7 +16,9 @@ public class Test_02_Map {
      * 1000000的数据量
      */
     static Hashtable<UUID, UUID> hashTable= new Hashtable<UUID, UUID>();
-//    static HashMap<UUID, UUID> hashMap =(HashMap<UUID, UUID>) Collections.synchronizedMap(new HashMap<UUID,UUID>());
+    static HashMap<UUID,UUID> hashMap = new HashMap<UUID, UUID>();
+    static Map<UUID, UUID> synchronizedMap = Collections.synchronizedMap(new HashMap<UUID,UUID>());
+    static ConcurrentHashMap<UUID,UUID> concurrentHashMap = new ConcurrentHashMap<UUID, UUID>();
     static UUID[] keys = new UUID[StaticValue.BIG_COUNT];
     static UUID[] values = new UUID[StaticValue.BIG_COUNT];
     /**
@@ -61,8 +61,8 @@ public class Test_02_Map {
 
         long endTime = System.currentTimeMillis();
 
-        System.out.println("take into " + hashTable.size());
-        System.out.println("it takes "+  (endTime-startTime)/1000 + "s");
+        System.out.println("take into " + concurrentHashMap.size());
+        System.out.println("it takes "+  (endTime-startTime) + "ms");
     }
 
     /**
@@ -101,7 +101,7 @@ public class Test_02_Map {
         public void run() {
             System.out.println(Thread.currentThread().getName() + "start----->" + start);
             for (int i = start; i < scope + start; i++) {
-                hashTable.put(keys[start+i],values[start+i]);
+                concurrentHashMap.put(keys[i],values[i]);
             }
         }
     }
