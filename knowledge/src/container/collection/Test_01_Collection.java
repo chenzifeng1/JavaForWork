@@ -20,7 +20,18 @@ public class Test_01_Collection {
 
 
     public static void main(String[] args) {
+        int[] a = new int[10];
+        for (int i = 0; i < 5; i++) {
+            a[i] = i;
+        }
 
+        System.arraycopy(a,2,a,3,3);
+//        a[2] = 99;
+        for (int i : a) {
+            System.out.println(i);
+        }
+
+//        Arrays.copyOf()
     }
 
 
