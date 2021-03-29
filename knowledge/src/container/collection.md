@@ -14,3 +14,17 @@
 `public static <T> T[] copyOf(T[] original, int newLength)`  
 该方法
 
+
+
+## Queue
+重要方法：  
+1. offer:
+2. add:
+3. peek:
+4. pull:
+
+### BlockingQueue
+相对于Queue多出两个实现阻塞的方法：  
+1. put:一定要加入队列，如果队列满了就阻塞当前线程，等待队列空出来在添加进去
+2. take: 从队列获取元素，如果队列空了就阻塞当前线程
+

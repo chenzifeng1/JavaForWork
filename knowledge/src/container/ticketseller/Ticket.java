@@ -13,30 +13,30 @@ import java.util.UUID;
 
 public class Ticket {
 
-    private UUID no;
-    private int status;
+    private UUID ticketID;
+    private int no;
 
-    public Ticket(UUID no, int status) {
+    public Ticket(UUID ticketID, int no) {
+        this.ticketID = ticketID;
         this.no = no;
-        this.status = status;
     }
 
     public Ticket() {
     }
 
-    public UUID getNo() {
+    public UUID getTicketID() {
+        return ticketID;
+    }
+
+    public void setTicketID(UUID ticketID) {
+        this.ticketID = ticketID;
+    }
+
+    public int getNo() {
         return no;
     }
 
-    public void setNo(UUID no) {
+    public void setNo(int no) {
         this.no = no;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-
-    public void setStatus(int status) {
-        this.status = status;
     }
 }
