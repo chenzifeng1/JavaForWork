@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
  * @Date: 2021-03-29 19:29
  * @Version: 1.0
  **/
-public class Test_01_LinkedBlocklingQueue {
+public class Test_02_LinkedBlocklingQueue {
     private final static LinkedBlockingQueue<String> STR_QUEUE = new LinkedBlockingQueue<>();
     private static Random random = new Random();
 

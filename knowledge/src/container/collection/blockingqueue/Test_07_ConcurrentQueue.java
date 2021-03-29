@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @Date: 2021-03-29 19:29
  * @Version: 1.0
  **/
-public class Test_01_ConcurrentQueue {
+public class Test_07_ConcurrentQueue {
 
     public static void main(String[] args) {
         //双端队列 ConcurrentLinkedDeque
