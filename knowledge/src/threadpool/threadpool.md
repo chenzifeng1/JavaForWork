@@ -51,3 +51,22 @@ public interface ExecutorService extends Executor {
 }
 
 ```
+
+## 线程池
+1. ThreadPoolExecutor
+2. ForkJoinPool 
+   - 分解汇总任务
+   - 用很少的线程可以执行很多的任务（子任务），TPE做不到先执行子任务
+   - CPU密集型
+   
+### ThreadPoolExecutor
+阿里手册要求程序员在构建线程池的时候手动构建，原因是`Executors`的构造线程池方法默认的阻塞队列是`LinkedBlockingQueue` 是无界阻塞队列，不断向里面添加任务会造成内存溢出。
+  
+手动构造线程池的几个参数:
+1. int corePoolSize, 
+2. int maximumPoolSize, 
+3. long keepAliveTime, 
+4. TimeUnit unit, 
+5. BlockingQueue<Runnable> workQueue, 
+6. ThreadFactory threadFactory, 
+7. RejectedExecutionHandler handler

@@ -10,7 +10,7 @@ import java.util.concurrent.*;
  * @Date: 2021-03-30 15:10
  * @Version: 1.0
  **/
-public class Test_Executor  {
+public class Test_01_Executor {
 
     ExecutorService e;
     Future<String> f;
