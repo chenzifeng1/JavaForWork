@@ -63,10 +63,25 @@ public interface ExecutorService extends Executor {
 阿里手册要求程序员在构建线程池的时候手动构建，原因是`Executors`的构造线程池方法默认的阻塞队列是`LinkedBlockingQueue` 是无界阻塞队列，不断向里面添加任务会造成内存溢出。
   
 手动构造线程池的几个参数:
-1. int corePoolSize, 
-2. int maximumPoolSize, 
-3. long keepAliveTime, 
-4. TimeUnit unit, 
-5. BlockingQueue<Runnable> workQueue, 
-6. ThreadFactory threadFactory, 
-7. RejectedExecutionHandler handler
+1. int corePoolSize,核心线程数，核心线程一般来说常驻内存
+2. int maximumPoolSize, 最大线程数：在核心线程不够用的情况下最多扩到多少个线程
+3. long keepAliveTime, 线程存活时间：非核心线程长时间不干活了，需要将其归还给操作系统；可以理解为非核心线程的最大空闲时间
+4. TimeUnit unit, 时间单位
+5. BlockingQueue<Runnable> workQueue, 任务队列，阻塞队列； 如果指定的阻塞队列是SynchronousQueue,容量为0，也就意味着来一个任务立刻需要一个线程来进行处理，不然其他任务无法加入。 
+6. ThreadFactory threadFactory, 线程工厂；如何创建线程，需要实现ThreadFactory这个接口。阿里开发手册：【强制】创建线程或者线程池时
+   请指定有意义的线程名称，方便出错回溯
+7. RejectedExecutionHandler handler 拒绝策略：
+   线程池工作流程：假设核心线程为2，最大线程为4，阻塞队列长度为5  
+   --> 第一个任务加入，线程池此时无线程，会创建一个线程去执行这个任务，由于当前线程数没达到核心线程最大值，因此该线程为核心线程，会常驻内存  
+   --> 第二个任务同理，如果第一个核心线程在忙，会创建第二个核心线程。  
+   --> 第三个任务加入时，如果两个核心线程都在忙碌，则会将其加入任务队列等待执行。   
+   ...  
+   --> 第八个任务加入时，由于核心线程在忙碌，且任务队列已满。会创建临时线程来处理这个任务  
+   --> 第九个任务加入时，创建第二个临时线程进行处理  
+   --> 第十个任务加入时，由于达到最大线程数，且任务队列已满，因此线程池需要拒绝该任务，拒绝的策略  
+   决策策略可以自定义，JDK默认提供了四种拒绝策略：
+   1. Abort:抛出异常
+   2. Discard：扔掉，不抛异常
+   3. DiscardOldest:扔掉排队最久的任务线程
+   4. CallerRuns: 调用者处理任务
+   实际情况下会自己定义对应的拒绝策略，实现对应的接口。一般会将过多的任务写到缓存，记录日志。想办法记录没有执行的任务，然后空闲时恢复任务继续执行。
