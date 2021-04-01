@@ -9,4 +9,5 @@
 3. 存储引擎
 ## 性能监控
 - 使用 `show profile`查询剖析工具，可以指定具体的type
-见官网
+见官网文档[mysql性能](https://dev.mysql.com/doc/refman/8.0/en/performance-schema.html)
+- 使用`performance_schema`  
