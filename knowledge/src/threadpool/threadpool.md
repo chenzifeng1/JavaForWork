@@ -59,9 +59,13 @@ public interface ExecutorService extends Executor {
    - 用很少的线程可以执行很多的任务（子任务），TPE做不到先执行子任务
    - CPU密集型
    
+Executors可以看作线程池的工厂
+   
 ### ThreadPoolExecutor
 阿里手册要求程序员在构建线程池的时候手动构建，原因是`Executors`的构造线程池方法默认的阻塞队列是`LinkedBlockingQueue` 是无界阻塞队列，不断向里面添加任务会造成内存溢出。
   
+- 这些线程池在阿里手册中都不建议使用【强制】，但是我们还是必须要了解一下这几个线程池，因为这会为我们提供一个思路：如果利用不同种类的线程池
+
 手动构造线程池的几个参数:
 1. int corePoolSize,核心线程数，核心线程一般来说常驻内存
 2. int maximumPoolSize, 最大线程数：在核心线程不够用的情况下最多扩到多少个线程
@@ -85,3 +89,103 @@ public interface ExecutorService extends Executor {
    3. DiscardOldest:扔掉排队最久的任务线程
    4. CallerRuns: 调用者处理任务
    实际情况下会自己定义对应的拒绝策略，实现对应的接口。一般会将过多的任务写到缓存，记录日志。想办法记录没有执行的任务，然后空闲时恢复任务继续执行。
+      
+### SingleThreadPool
+线程池内只有一个线程，原因： 
+1. 该线程池可以保证任务是顺序执行的。
+2. 线程池内维护一个任务队列，以及线程池的生命周期也会维护。不需要我们来维护  
+可以看一下线程池的创建参数：
+```java
+public class Executors{
+   public static ExecutorService newSingleThreadExecutor() {
+      return new Executors.FinalizableDelegatedExecutorService(
+              new ThreadPoolExecutor(
+                      1, //核心线程数  
+                      1, //最大线程数
+                      0L, //非核心线程空闲时间
+                      TimeUnit.MILLISECONDS, //时间单位 
+                      new LinkedBlockingQueue())) //任务队列：该队列最大值为int类型的最大值，并非无限
+              ;
+   }
+}   
+```
+- 核心线程数为1，最大线程数为1保证线程池内只维护一个线程。
+- 任务队列使用`LinkedBlockingQueue`,这也是阿里不推荐使用`Executors`创建线程池的原因
+
+
+### CachedThreadPool
+缓存线程池，这个线程池很有意思，我们先看他的初始化参数：
+```java
+public class Executors{
+   public static ExecutorService newCachedThreadPool() {
+      return new ThreadPoolExecutor(
+              0, //核心线程为0 
+              2147483647, //最大线程数 为int类型的最大值
+              60L, 
+              TimeUnit.SECONDS, 
+              new SynchronousQueue());//任务队列使用SynchronousQueue,来一个任务就处理一个，容量为0
+   }
+}
+```
+- 核心线程数为0，这样如果没有任务时，销毁所有线程。降低维护线程的资源使用
+- 最大线程数为int的最大值，这样尽可能让多的线程来执行任务
+- 任务队列使用`SynchronousQueue`,该阻塞队列的容量为0，即来一个任务就需要一个线程来执行，不然就阻塞着。
+
+### FixedThreadPool
+固定线程数的线程池，这个线程可以与`CachedThreadExecutor`这个线程池比较一下，两者适用于不同的场景。
+```java
+public class Executors{
+
+   public static ExecutorService newFixedThreadPool(int nThreads) {
+      return new ThreadPoolExecutor(
+              nThreads, 
+              nThreads, 
+              0L, 
+              TimeUnit.MILLISECONDS, 
+              new LinkedBlockingQueue());
+   }
+}
+```
+该线程的核心线程与最大线程相等，意味着初始化之后线程池内的线程均为核心线程，常驻内存。所以初始化的时候指定多少线程就需要考量一下。
+1. 线程数过多会引起线程之间竞争CPU和内存资源，且线程切换会耗费CPU资源
+2. 线程数过少会引起CPU的利用率较低
+
+确定线程数的方法：
+1. CPU数+1
+2. 线程个数=CPU个数× 期望CPU利用率 ×(1+线程等待时间/线程计算时间);
+
+### ScheduledThreadPool
+定时任务线程池，该线程池可以定时执行提交的任务，比较常用。但是如果定时任务比较复杂，且业务量多的时候建议使用`quartz`。看一下线程池的参数设置：
+```java
+public class Executors{
+
+   public ScheduledThreadPoolExecutor(int corePoolSize) {
+      super(
+              corePoolSize,
+              2147483647,//最大线程池依旧是int的最大值
+              10L,
+              TimeUnit.MILLISECONDS,
+              new ScheduledThreadPoolExecutor.DelayedWorkQueue());//任务队列使用的是 DelayWorkQueue
+   }
+}
+```
+之前学习DelayWorkQueue的时候，介绍到该队列会根据设定的时间优先级来执行任务。
+
+
+## 拒绝策略
+jdk还提供默认的四种拒绝策略：
+1. AbortPolicy : 丢弃任务，并抛出异常
+2. DiscardPolicy ： 丢弃任务，不抛出异常
+3. DiscardOldestPolicy ：丢弃任务队列中最老的任务
+4. CallerRunsPolicy ： 交给调用者线程去执行任务。
+
+四种拒绝策略都不不经常使用，一般需要自己定义线程拒绝策略，比如说将无法处理的任务放入消息队列，或者是记录日志、等空闲时复原执行。
+自己定义拒绝策略只需要实现`RejectedExecutionHandler`接口即可
+```java
+public interface RejectedExecutionHandler {
+    void rejectedExecution(Runnable var1, ThreadPoolExecutor var2);
+}
+```
+
+
+

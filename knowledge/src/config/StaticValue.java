@@ -18,4 +18,6 @@ public class StaticValue {
 
     public static final int BIG_COUNT = 1000000;
 
+    public static final int FIVE = 5;
+
 }
