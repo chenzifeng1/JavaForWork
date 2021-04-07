@@ -14,6 +14,7 @@ public class Test_01_Executor {
 
     ExecutorService e;
     Future<String> f;
+    ThreadPoolExecutor t;
 
     public static void main(String[] args) {
         Callable<String> c = new Callable() {
@@ -32,6 +33,7 @@ public class Test_01_Executor {
         System.out.println("主线程继续执行");
         TimeUtils.timeUintSleep(2,TimeUnit.SECONDS);
         System.out.println("主线程执行完毕");
+
         try {
             // Future.get 会阻塞
             System.out.println(submit.get());
