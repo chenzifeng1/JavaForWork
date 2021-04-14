@@ -9,7 +9,7 @@ JMH 比较典型的应用场景如下：
 3. 查看多少百分比的请求在多长时间内完成
 
 ## 使用
-JMH是jdk9自带的，如果是jdk9之前的版本需要加入以下依赖:
+ - JMH是jdk9自带的，如果是jdk9之前的版本需要加入以下依赖:
 ```xml
 <dependency>
     <groupId>org.openjdk.jmh</groupId>
@@ -23,5 +23,8 @@ JMH是jdk9自带的，如果是jdk9之前的版本需要加入以下依赖:
     <version>1.23</version>
 </dependency>
 ```
+
+- 插件： jmh
+- 注解：Setting-> Build、-> Compiler -> Annotation Processors 勾选Enable Annotation Processors
 
 
