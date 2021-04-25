@@ -92,10 +92,65 @@ loading->linking(verification->preparation->resolution)->initialization
 
 - 父加载器：不是类加载器的加载器，如上图所示，CustomClassLoader的父加载器是AppClassLoader,
   但是不是说CustomClassLoader是继承于AppClassLoader的，而是说当加载某个class找不到CustomClassLoader时， 去委托给他的父加载器进行加载。
+- loadClass: 在硬盘中获取类的源码，将其转为字节码加载到内存中，然后返回一个class对象。`XXX.class.getClassLoader().loadClass("class_full_name")`。 使用途径：
+    1. spring动态代理，将一个新Class加载到内存中
+    2. 热部署时，也会用loadClass来将类加载到内存中
+
+```java
+public abstract class ClassLoader {
+    /**
+     * loadClass 源码解析
+     * @param name
+     * @param resolve
+     * @return
+     * @throws ClassNotFoundException
+     */
+    protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+        // 这个需要保证线程安全
+        synchronized (this.getClassLoadingLock(name)) {
+            //TODO 第一步，检查该类是否被加载过了，如果被加载过了（cache里面有该类的class对象），直接返回
+            Class<?> c = this.findLoadedClass(name);
+            if (c == null) {
+                // 如果没有被加载过，执行下列逻辑
+                long t0 = System.nanoTime();
+
+                try {
+                    // 委派给父加载器去加载  双亲委派 子加载器向上委托父类进行查询
+                    if (this.parent != null) {
+                        //父加载器同样调用loadClass这个方法，也会走上面的流程，
+                        c = this.parent.loadClass(name, false);
+                    } else {
+                        // 到了Bootstrap这个顶级加载器之后，就会查找bootstrap对应的缓存内有无加载过该类
+                        c = this.findBootstrapClassOrNull(name);
+                    }
+                } catch (ClassNotFoundException var10) {
+                }
+                //TODO 第二步,如果没有在缓存中找到这个类，那就去加载这个类，这里第二次判断为空时因为父加载器可能已经加载了对应的类，
+                if (c == null) {
+                    long t1 = System.nanoTime();
+                    //protected findClass 该方法: throw new ClassNotFoundException(name); 需要子类去实现一下该方法，这个方法也是我们自定义类加载器的关键
+                    c = this.findClass(name);
+                    PerfCounter.getParentDelegationTime().addTime(t1 - t0);
+                    PerfCounter.getFindClassTime().addElapsedTimeFrom(t1);
+                    PerfCounter.getFindClasses().increment();
+                }
+            }
+
+            if (resolve) {
+                this.resolveClass(c);
+            }
+
+            return c;
+        }
+    }
+}
+```
 
 ### 双亲委派
 
 是一个孩子向父亲，然后父亲向孩子方向的双亲委派过程。
 ![双亲委派过程](../../img/双亲委派.png)
 为什么要搞双亲委派的机制：不会重复操作吗 主要是为了安全，不让自定义的classloader来替代核心的类加载器。
+
+
 
