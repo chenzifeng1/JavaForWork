@@ -85,7 +85,7 @@ loading->linking(verification->preparation->resolution)->initialization
     1. 该类的所有对象实例都被GC
     2. 没有其他指向该类的引用
 
-## 类加载器
+## 类加载器 ClassLoader
 
 类加载器分不同的层次，不同层次的类加载器负责加载不同的class。  
 ![类加载器](../../img/classloader.PNG)
@@ -145,6 +145,8 @@ public abstract class ClassLoader {
     }
 }
 ```
+### 定义ClassLoader
+继承`ClassLoader`,重写`findClass`方法即可。案例见[自定义ClassLoader](JVM_03_ClassLoader.java)
 
 ### 双亲委派
 
@@ -152,5 +154,32 @@ public abstract class ClassLoader {
 ![双亲委派过程](../../img/双亲委派.png)
 为什么要搞双亲委派的机制：不会重复操作吗 主要是为了安全，不让自定义的classloader来替代核心的类加载器。
 
+## 混合模式
+
+- 解释器：bytecode interpreter
+- 编译器：Just In-Time compiler
+- 混合模式：
+    1. 混合使用解释器+热点代码编译
+    2. 起始阶段采用解释执行，
+    3. 热点代码检测： 
+     - 多次被调用的方法 （方法计数器，监测方法执行的频率）
+     - 多次被调用的循环 （循环计数器，监测循环执行的频率）
+     - 进行编译
+    
+注：
+ - -Xmixed 默认混合模式，开始解释执行，启动速度较快，对热点代码进行检测和编译
+ - -Xint 使用解释模式，启动很快，执行稍慢
+ - -Xcomp 使用纯编译模式，执行很快，启动较慢
+
+## 懒加载 lazyInitializing （了解）
+没有规定合适加载，但是规定了必须初始化的条件：
+1. new,getstatic,putstatic,invokestatic指令，访问final变量除外
+2. java.lang.reflect对类进行反射调用时
+3. 初始化子类，必先初始化父类
+4. 虚拟机启动时，被执行的主类必须初始化
+5. 动态语言支持java.lang.invoke.MethodHandle解析结果为REF_getstatic,REF_putstatic,REF_invokestatic的方法句柄时，该类必须初始化
+
+
+     
 
 
