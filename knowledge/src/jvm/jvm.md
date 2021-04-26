@@ -182,7 +182,12 @@ public abstract class ClassLoader {
 4. 虚拟机启动时，被执行的主类必须初始化
 5. 动态语言支持java.lang.invoke.MethodHandle解析结果为REF_getstatic,REF_putstatic,REF_invokestatic的方法句柄时，该类必须初始化
 
+老的CPU： 总线锁，在L3缓存到L2(CPU内部)之间有个总线，每次有CPU的线程去读L3的数据时，给整个总线上锁。
+新的CPU： MESI Cache 各种缓存一致性协议 
 
-     
+### 缓存行 CacheLine
+读取缓存时，以CacheLine为基本单位
+- 伪共享： 位于同一缓存行的不同数据被不同CPU锁定，产生互相影响的伪共享问题
+## 硬件层数据一致性
 
 
