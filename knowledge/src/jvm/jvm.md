@@ -188,6 +188,29 @@ public abstract class ClassLoader {
 ### 缓存行 CacheLine
 读取缓存时，以CacheLine为基本单位
 - 伪共享： 位于同一缓存行的不同数据被不同CPU锁定，产生互相影响的伪共享问题
-## 硬件层数据一致性
+### 硬件层数据一致性
 
+## 乱序问题
+CPU为了提高指令执行效率，会在执行一条指令的期间（比如说去内存读数据（时间较长）），去执行另一条指令，前提是
+两条指令之间没有依赖关系。
+
+### CPU内存屏障
+以Inter的内存屏障为例：  
+- `sfence`: 在`sfence`前的写指令必须在`sfence`后的写指令之前完成
+- `wfence`: 在`wfence`前的读指令必须在`wfence`后的读指令之前完成
+- `mfence`: 在`mfence`前的读写指令必须在`mfence`后的读写指令之前完成
+### JVM内存屏障
+- LoadLoadBarrier
+- LoadStoreBarrier
+- StoreStoreBarrier
+- StoreLoadBarrier
+
+
+## volatile
+实现细节：
+- 字节码层面： 0x0040 [ACC_VOLATILE]
+- JVM层面： volatile内存区的读写都加内存屏障
+   - StoreStoreBarrier  [Volatile 写操作]   StoreLoadBarrier
+   - LoadLoadBarrier [Volatile 读操作]  LoadStoreBarrier
+  
 
