@@ -213,4 +213,12 @@ CPU为了提高指令执行效率，会在执行一条指令的期间（比如�
    - StoreStoreBarrier  [Volatile 写操作]   StoreLoadBarrier
    - LoadLoadBarrier [Volatile 读操作]  LoadStoreBarrier
   
+## synchronized
+字节码层面：
+- synchronized方法：在`access_flag` 修饰符上注明是`ACC_SYNCHRONIZED`的
+- synchronized代码块： 一个`monitorenter`和两个`monitorexit`,在`monitorenter`与`monitorexit`中间的指令是加锁的，只允许一个现场进行访问。
+  之所以有两个`monitorexit`是为了在`synchronized`代码块内的语句出现异常时退出用的。
+  
+JVM层面：
+- C/C++调用操作系统提供的同步机制
 
