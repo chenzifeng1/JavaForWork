@@ -247,6 +247,11 @@ JVM层面：
   > oops:Ordinary object pointers 普通对象指针，类的引用类型的成员变量的指针 压缩参数： -XX:UserCompressedOops
 
 3. 对象头包括什么
+    - markword: 锁定信息，GC标记（分代年龄）
+      ![markdown的内容](../../img/markdown的内容.PNG)
+      
+    1. hashCode:
+    31位的hashCode ->System.identifyHashCode()
 4. 对象如何定位
 5. 对象如何分配
 6. Object o = new Object在内存中占多少个字节
