@@ -255,5 +255,9 @@ JVM层面：
 4. 对象如何定位
 5. 对象如何分配
 6. Object o = new Object在内存中占多少个字节
+
+## 运行时数据区 (Run-Time Data Area)
+
+![运行时数据模块](../../img/运行时数据区.PNG)
   
 

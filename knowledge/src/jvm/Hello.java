@@ -16,6 +16,10 @@ public class Hello {
     }
 
     public static void main(String[] args) {
+        int i = 8;
+        i = i++;
+        System.out.println(i);
+
         Hello h = new Hello();
     }
 }
