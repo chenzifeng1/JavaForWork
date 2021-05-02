@@ -224,14 +224,14 @@ JVM层面：
 
 ## 对象的内存布局
 > 观察虚拟机配置：`java +XX:PrintCommandLineFlags -version`
-1. 对象创建过程
+### 对象创建过程
    1. class loading
    2. class linking(verification,preparation,resolution)
    3. class initializing：静态变量赋初始值，调用静态语句块
    4. 申请对象内存
    5. 成员变量赋默认值
    6. 调用构造方法<init>: 1.成员变量顺序赋初始值 2.调用构造方法
-2. 对象在内存中的布局如何
+### 对象在内存中的布局如何
   - 普通对象: new Object 对象 16个 
      1. 对象头：markdown 8
      2. ClassPointer指针：指向class对象 -XX:+UseCompressedClassPointers 使用压缩的Class指针（4字节），不开启是8字节。默认开启
@@ -246,18 +246,34 @@ JVM层面：
   > ClassPointer:类对象指针，指向内存中的class对象 压缩参数 -XX:+UserCompressedClassPointers  
   > oops:Ordinary object pointers 普通对象指针，类的引用类型的成员变量的指针 压缩参数： -XX:UserCompressedOops
 
-3. 对象头包括什么
+### 对象头包括什么
     - markword: 锁定信息，GC标记（分代年龄）
       ![markdown的内容](../../img/markdown的内容.PNG)
-      
+      查看对象头的内容应该看该对象目前处在一个什么样的锁状态：
+      - 无锁态： 0-24位是对象的hashCode |  24-28位是分代年龄
+      - 轻量级锁：
+      - 重量级锁：
+      - GC标记状态
+      - 偏向锁：
     1. hashCode:
     31位的hashCode ->System.identifyHashCode()
+    2. 为什么GC年龄最大是15？对象头中4位表示GC的年龄，因此能表示的最大正整数是15，也就是GC最大的年龄是15.
+
 4. 对象如何定位
 5. 对象如何分配
 6. Object o = new Object在内存中占多少个字节
 
+
+### 对象如何定位
+   1. 句柄池：GC时的效率较高
+      ![句柄池的方式](../../img/对象定位-句柄池.PNG)
+   2. 直接指针（HotSpot实现方式）:定位的效率相对较高
+    
+### 对象如何分配
+### Object o = new Object在内存中占多少个字节
+
+
+
 ## 运行时数据区 (Run-Time Data Area)
 
 ![运行时数据模块](../../img/运行时数据区.PNG)
-  
-
