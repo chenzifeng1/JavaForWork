@@ -76,9 +76,9 @@ loading->linking(verification->preparation->resolution)->initialization
 ### 初始化
 
 调用`<clinit>`方法，赋予初始值，所以如果对象的属性没有被赋初始值，那值就是在连接->准备过程中所给予的默认值。
-- 注意，这里的`<clinit>`方法并非构造方法，因为这个是将类加载到内存的过程，而非生成实例的过程，这个init方法应该是为类的静态变量赋予初始值。  
-- new Object(); new对象的过程也分为两步：1. 为成员变量分配内存空间，赋默认值 2. 调用构造方法赋初始值 
 
+- 注意，这里的`<clinit>`方法并非构造方法，因为这个是将类加载到内存的过程，而非生成实例的过程，这个init方法应该是为类的静态变量赋予初始值。
+- new Object(); new对象的过程也分为两步：1. 为成员变量分配内存空间，赋默认值 2. 调用构造方法赋初始值
 
 ### 卸载
 
@@ -148,7 +148,9 @@ public abstract class ClassLoader {
     }
 }
 ```
+
 ### 定义ClassLoader
+
 继承`ClassLoader`,重写`findClass`方法即可。案例见[自定义ClassLoader](JVM_03_ClassLoader.java)
 
 ### 双亲委派
@@ -164,89 +166,110 @@ public abstract class ClassLoader {
 - 混合模式：
     1. 混合使用解释器+热点代码编译
     2. 起始阶段采用解释执行，
-    3. 热点代码检测： 
-     - 多次被调用的方法 （方法计数器，监测方法执行的频率）
-     - 多次被调用的循环 （循环计数器，监测循环执行的频率）
-     - 进行编译
-    
+    3. 热点代码检测：
+
+    - 多次被调用的方法 （方法计数器，监测方法执行的频率）
+    - 多次被调用的循环 （循环计数器，监测循环执行的频率）
+    - 进行编译
+
 注：
- - -Xmixed 默认混合模式，开始解释执行，启动速度较快，对热点代码进行检测和编译
- - -Xint 使用解释模式，启动很快，执行稍慢
- - -Xcomp 使用纯编译模式，执行很快，启动较慢
+
+- -Xmixed 默认混合模式，开始解释执行，启动速度较快，对热点代码进行检测和编译
+- -Xint 使用解释模式，启动很快，执行稍慢
+- -Xcomp 使用纯编译模式，执行很快，启动较慢
 
 ## 懒加载 lazyInitializing （了解）
+
 没有规定合适加载，但是规定了必须初始化的条件：
+
 1. new,getstatic,putstatic,invokestatic指令，访问final变量除外
 2. java.lang.reflect对类进行反射调用时
 3. 初始化子类，必先初始化父类
 4. 虚拟机启动时，被执行的主类必须初始化
 5. 动态语言支持java.lang.invoke.MethodHandle解析结果为REF_getstatic,REF_putstatic,REF_invokestatic的方法句柄时，该类必须初始化
 
-老的CPU： 总线锁，在L3缓存到L2(CPU内部)之间有个总线，每次有CPU的线程去读L3的数据时，给整个总线上锁。
-新的CPU： MESI Cache 各种缓存一致性协议 
+老的CPU： 总线锁，在L3缓存到L2(CPU内部)之间有个总线，每次有CPU的线程去读L3的数据时，给整个总线上锁。 新的CPU： MESI Cache 各种缓存一致性协议
 
 ### 缓存行 CacheLine
+
 读取缓存时，以CacheLine为基本单位
+
 - 伪共享： 位于同一缓存行的不同数据被不同CPU锁定，产生互相影响的伪共享问题
+
 ### 硬件层数据一致性
 
 ## 乱序问题
-CPU为了提高指令执行效率，会在执行一条指令的期间（比如说去内存读数据（时间较长）），去执行另一条指令，前提是
-两条指令之间没有依赖关系。
+
+CPU为了提高指令执行效率，会在执行一条指令的期间（比如说去内存读数据（时间较长）），去执行另一条指令，前提是 两条指令之间没有依赖关系。
 
 ### CPU内存屏障
-以Inter的内存屏障为例：  
+
+以Inter的内存屏障为例：
+
 - `sfence`: 在`sfence`前的写指令必须在`sfence`后的写指令之前完成
 - `wfence`: 在`wfence`前的读指令必须在`wfence`后的读指令之前完成
 - `mfence`: 在`mfence`前的读写指令必须在`mfence`后的读写指令之前完成
+
 ### JVM内存屏障
+
 - LoadLoadBarrier
 - LoadStoreBarrier
 - StoreStoreBarrier
 - StoreLoadBarrier
 
-
 ## volatile
+
 实现细节：
+
 - 字节码层面： 0x0040 [ACC_VOLATILE]
 - JVM层面： volatile内存区的读写都加内存屏障
-   - StoreStoreBarrier  [Volatile 写操作]   StoreLoadBarrier
-   - LoadLoadBarrier [Volatile 读操作]  LoadStoreBarrier
-  
+    - StoreStoreBarrier  [Volatile 写操作]   StoreLoadBarrier
+    - LoadLoadBarrier [Volatile 读操作]  LoadStoreBarrier
+
 ## synchronized
+
 字节码层面：
+
 - synchronized方法：在`access_flag` 修饰符上注明是`ACC_SYNCHRONIZED`的
 - synchronized代码块： 一个`monitorenter`和两个`monitorexit`,在`monitorenter`与`monitorexit`中间的指令是加锁的，只允许一个现场进行访问。
   之所以有两个`monitorexit`是为了在`synchronized`代码块内的语句出现异常时退出用的。
-  
+
 JVM层面：
+
 - C/C++调用操作系统提供的同步机制
 
 ## 对象的内存布局
+
 > 观察虚拟机配置：`java +XX:PrintCommandLineFlags -version`
+
 ### 对象创建过程
-   1. class loading
-   2. class linking(verification,preparation,resolution)
-   3. class initializing：静态变量赋初始值，调用静态语句块
-   4. 申请对象内存
-   5. 成员变量赋默认值
-   6. 调用构造方法<init>: 1.成员变量顺序赋初始值 2.调用构造方法
+
+1. class loading
+2. class linking(verification,preparation,resolution)
+3. class initializing：静态变量赋初始值，调用静态语句块
+4. 申请对象内存
+5. 成员变量赋默认值
+6. 调用构造方法<init>: 1.成员变量顺序赋初始值 2.调用构造方法
+
 ### 对象在内存中的布局如何
-  - 普通对象: new Object 对象 16个 
-     1. 对象头：markdown 8
-     2. ClassPointer指针：指向class对象 -XX:+UseCompressedClassPointers 使用压缩的Class指针（4字节），不开启是8字节。默认开启
-     3. 实例数据：引用类型,
-     4. padding对齐： 8的倍数
-  - 数组对象：
+
+- 普通对象: new Object 对象 16个
+    1. 对象头：markdown 8
+    2. ClassPointer指针：指向class对象 -XX:+UseCompressedClassPointers 使用压缩的Class指针（4字节），不开启是8字节。默认开启
+    3. 实例数据：引用类型,
+    4. padding对齐： 8的倍数
+- 数组对象：
     1. 对象头：markdown 8
     2. ClassPointer指针：数组元素的class对象
     3. 数组长度： 4字节
     4. 数组数据
     5. padding对齐：8的倍数
-  > ClassPointer:类对象指针，指向内存中的class对象 压缩参数 -XX:+UserCompressedClassPointers  
-  > oops:Ordinary object pointers 普通对象指针，类的引用类型的成员变量的指针 压缩参数： -XX:UserCompressedOops
+
+> ClassPointer:类对象指针，指向内存中的class对象 压缩参数 -XX:+UserCompressedClassPointers  
+> oops:Ordinary object pointers 普通对象指针，类的引用类型的成员变量的指针 压缩参数： -XX:UserCompressedOops
 
 ### 对象头包括什么
+
     - markword: 锁定信息，GC标记（分代年龄）
       ![markdown的内容](../../img/markdown的内容.PNG)
       查看对象头的内容应该看该对象目前处在一个什么样的锁状态：
@@ -263,17 +286,44 @@ JVM层面：
 5. 对象如何分配
 6. Object o = new Object在内存中占多少个字节
 
-
 ### 对象如何定位
-   1. 句柄池：GC时的效率较高
-      ![句柄池的方式](../../img/对象定位-句柄池.PNG)
-   2. 直接指针（HotSpot实现方式）:定位的效率相对较高
-    
+
+1. 句柄池：GC时的效率较高
+   ![句柄池的方式](../../img/对象定位-句柄池.PNG)
+2. 直接指针（HotSpot实现方式）:定位的效率相对较高
+
 ### 对象如何分配
+
 ### Object o = new Object在内存中占多少个字节
-
-
 
 ## 运行时数据区 (Run-Time Data Area)
 
 ![运行时数据模块](../../img/运行时数据区.PNG)
+
+- PC(Program Counter,程序计数器)： 存放下一条指令
+  1. 每个JVM的线拥有其自己的栈帧 （线程独有）
+- JVM Stack: 每个线程一个栈，每个方法一个栈帧（线程独有）
+    Frames（栈帧）:
+    1. Local Variable Table
+    2. Operand Stack
+    3. Dynamic Linking
+- Heap:堆与GC相关，线程共享
+- native method area: 本地方法区，存放C/C++写的方法
+- Direct Memory：直接内存，从java内部直接访问OS管理的内存，用于IO操作。以网络IO为例，
+  之前网络IO传过来的数据放到OS内存的一块区域，JVM想用的话需要将该区域的数据copy到JVM管理的内存，
+  比较麻烦，现在的话直接操作OS的内存。NIO使用的就是直接内存，实现`zero copy`
+  
+- Method Area(方法区)：方法区是一个逻辑上的概念，用来存储class的结构。可以有不同的实现
+  1. Perm Space(永久区，jdk1.8之前，不包括1.8)：字符串常量位于Perm Space,FGC（full gc）不会清理该区域
+  2. Meta Space(元数据区，1.8及以后)：字符串常量位于堆，会触发FGC
+  方法区包括`run-time constant pool`,运行时常量池，即class文件中的常量池部分，在运行时就放置在该区域
+     
+线程的独占与共享区域图解如下：
+![线程共享、独占](../../img/线程共享-独占区.PNG)
+
+### 栈帧Frame
+![栈帧](../../img/栈帧.PNG)
+- Dynamic Linking: 每个栈帧中包含一个`Dynamic Linking`，指向常量池中的`符号链接`，查看该符号连接是否有解析等。
+- Local Variable: 局部变量
+- Operand Stack: 
+- return address: 方法返回时的地址
