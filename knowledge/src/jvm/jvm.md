@@ -325,5 +325,7 @@ JVM层面：
 ![栈帧](../../img/栈帧.PNG)
 - Dynamic Linking: 每个栈帧中包含一个`Dynamic Linking`，指向常量池中的`符号链接`，查看该符号连接是否有解析等。
 - Local Variable: 局部变量
-- Operand Stack: 
+- Operand Stack:  每个操作都会存在变量的`压栈`，`出栈`. 通过 操作栈可以使方法内部的操作递归的进行。
 - return address: 方法返回时的地址
+
+每个方法对应一个栈帧，每个栈帧中都包含上述四个部分
