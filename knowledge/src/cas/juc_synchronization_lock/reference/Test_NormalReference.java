@@ -12,6 +12,8 @@ import java.io.IOException;
  **/
 
 public class Test_NormalReference {
+
+
     public static void main(String[] args) {
         M m = new M();
         m = null;
