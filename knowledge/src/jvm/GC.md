@@ -30,6 +30,24 @@ C/C++使用手动回收，可能遇到的问题：忘记回收、回收多次
   2. 需要扫描两次，且存在对象移动问题，效率较低
 
 ## 常见的垃圾回收器
+![常见的垃圾回收器](../../img/GC-垃圾回收器.PNG)
+分代的垃圾回收器：
+- JDK诞生的时候，Serial就追随了，Serial/Serial Old：单线程的  Parallel/Parallel Old:多线程的
+- CMS JDK8及之前
+- G1: JDK9 G1仅在逻辑上分为年代和老年代，物理上不分代。
+- Serial,Parallel,ParNew,CMS,Serial Old,Parallel Old 在逻辑和物理上均分代。
+- STW: stop the world 将所有应用线程停止
+1. Serial ： a stop-the-world, copying collector which use a single GC Thread
+![serial](../../img/GC-Collector-serial.PNG)
+
+常见的三种组合：
+1. Serial + Serial Old
+2. Parallel + Parallel Old
+3. ParNew + CMS
+不分代的垃圾回收器：
+1. ZGC
+2. Shenandoah
+
 1. 部分垃圾回收器使用的模型：
 >  除Epsilon,ZGC,Shenandoah之外的GC都是逻辑分代
 > G1是逻辑分代，物理不分代
@@ -72,6 +90,12 @@ C/C++使用手动回收，可能遇到的问题：忘记回收、回收多次
  2. CMS 6次
  3. G1 15次
 - 动态年龄：当对象从(Eden+S1)->S2超过S2区域的50%时，将年龄最大的对象放入老年代
+- 分配担保： YGC期间，Survivor区内存不够，有新的对象进来的话，通过空间担保直接进入老年代
 ![对象分配流程](../../img/GC-对象分配流程.PNG)
+  
+> 获取JVM的参数： java -XX:PrintFlagsFinal 获取所有非标参数，大概有七八百个，为了更准确的找相关的参数  
+> 我们可以使用  java -XX:PrintFlagsFinal | grep xxx
+
+
 ## JVM调优经验
 
