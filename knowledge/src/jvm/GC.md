@@ -26,76 +26,104 @@ C/C++使用手动回收，可能遇到的问题：忘记回收、回收多次
 
 - Mark-Compact (标记压缩)： 扫描内存，找出不可回收的，第二遍将不可回收的区域移动到相近的内存区域
   ![标记-压缩](../../img/GC-Mark_Compact.PNG)
-  1. 不会产生内存碎片，也不会产生可用内存减半问题
-  2. 需要扫描两次，且存在对象移动问题，效率较低
+    1. 不会产生内存碎片，也不会产生可用内存减半问题
+    2. 需要扫描两次，且存在对象移动问题，效率较低
 
 ## 常见的垃圾回收器
+
 ![常见的垃圾回收器](../../img/GC-垃圾回收器.PNG)
 分代的垃圾回收器：
-- JDK诞生的时候，Serial就追随了，Serial/Serial Old：单线程的  Parallel/Parallel Old:多线程的
+
+- JDK诞生的时候，Serial就追随了，为了提高效率，诞生了PS,为了配合CMS，诞生了PN。CMS是JDK1.4后期引入，
+  是里程碑式的GC,CMS开启了并发回收的过程，但CMS的毛病较多.   
+  并发回收的原因是因为无法忍受STW，即使是多线程，STW的时间也比较长
+  Serial/Serial Old：单线程的 Parallel/Parallel Old:多线程的
 - CMS JDK8及之前
 - G1: JDK9 G1仅在逻辑上分为年代和老年代，物理上不分代。
 - Serial,Parallel,ParNew,CMS,Serial Old,Parallel Old 在逻辑和物理上均分代。
 - STW: stop the world 将所有应用线程停止
-1. Serial ： a stop-the-world, copying collector which use a single GC Thread
-![serial](../../img/GC-Collector-serial.PNG)
 
 常见的三种组合：
-1. Serial + Serial Old
-2. Parallel + Parallel Old
-3. ParNew + CMS
-不分代的垃圾回收器：
+
+1. Serial + Serial Old  
+   ![serial](../../img/GC-Collector-serial.PNG)
+    1. Serial ： a stop-the-world, copying collector which use a single GC Thread
+    2. Serial Old : a stop-the-world Mark-sweep-compact collector which use a single GC Thread    
+    - safe point: 安全点，线程停止需要一个过程，因此需要在一定的时间点保证全部线程都停止
+    - 停顿时间： 用于GC thread
+    `Serial`和`Serial Old` 模式相同，只不过使用不同的垃圾回收算法，一个是`Copying`,一个是`Mark-Sweep/Mark-Compact`。 相应的，它们的工作区也不一样，`Serial`
+    工作在年轻代，而`Serial Old`工作在老年代。
+
+2. Parallel Scavenge+ Parallel Old (PS+PO): 默认情况下的垃圾回收器
+   ![PS+PO](../../img/GC-Collector-ps+po.PNG)
+   1. Parallel Scavenge: a stop-the-world, copying collector which use multiple GC Threads
+   2. Parallel Old:  a compact collect which use multiple GC threads
+    
+3. ParNew + CMS ：
+   1. ParNew: 在Parallel Scavenge基础上做了一些增强，来适合CMS
+   2. CMS：concurrent mark sweep  
+    ![CMS](../../img/GC-Collector-CMS.PNG)
+    - 初始标记：标记根对象，STW
+    - 并发标记：占GC的大部分时间
+    - 重新标记：标记 第二个阶段产生的垃圾
+    - 并发清理：会产生浮动垃圾
 1. ZGC
 2. Shenandoah
 
 1. 部分垃圾回收器使用的模型：
->  除Epsilon,ZGC,Shenandoah之外的GC都是逻辑分代
+
+> 除Epsilon,ZGC,Shenandoah之外的GC都是逻辑分代
 > G1是逻辑分代，物理不分代
 > 其他既是逻辑分代，又是物理分代
+
 2. 堆内存逻辑分区 （只适合分代模型）
-![分代模型](../../img/GC-堆内存逻辑分区.PNG)
-   - Eden: new对象时候进行分配的区域
-   - Survivor: 进行一次GC如果没有被回收就会从S1->S2,在进行一次GC没被回收就会从S2->S1。这里参考`Copying`的回收算法流程。
-    另外，最多进行15次GC,依旧没有回收就会放入老年代。15这个次数，参考对象头中关于分代字段的长度
-   - tenured： 如果一个对象在经历过多次GC之后没有被回收，那么进入tenured
-    
-一个对象从产生到消亡的内存经历： 
+   ![分代模型](../../img/GC-堆内存逻辑分区.PNG)
+    - Eden: new对象时候进行分配的区域
+    - Survivor: 进行一次GC如果没有被回收就会从S1->S2,在进行一次GC没被回收就会从S2->S1。这里参考`Copying`的回收算法流程。
+      另外，最多进行15次GC,依旧没有回收就会放入老年代。15这个次数，参考对象头中关于分代字段的长度
+    - tenured： 如果一个对象在经历过多次GC之后没有被回收，那么进入tenured
+
+一个对象从产生到消亡的内存经历：
+
 1. 首先尝试进行栈上分配，如果分配不下，则分配到eden区
 2. eden区的对象在经历过一次GC之后会进入S1
 3. Survivor区的对象每经历一次GC就会向另一个区移动，应该是根据`Copying`GC算法的特点决定的。
 4. CMS中在经历过6次GC之后，对象就会进入老年代；G1经历15次会进入老年代
 
 - MinorGC/YGC ： 年轻代空间耗尽时触发
-- MajorGC/FullGC ： 老年代无法继续分配空间时出发，年轻代与老年代同时进行GC 
-    
+- MajorGC/FullGC ： 老年代无法继续分配空间时出发，年轻代与老年代同时进行GC
+
 ### 对象分配
+
 - 栈上分配
     1. 线程私有**小**对象
     2. 无逃逸：当一个对象只在一个方法内部使用时，没有方法外部的变量指向它，那么该对象就是没有逃逸出方法
     3. 支持标量替换
     4. 这里无需调整（调优不需要）
-    
+
 - 线程本地分配TLAB (Thread Local Allocation Buffer) 一个线程内的对象分配时，优先往TLAB上分配
     1. 占用eden区，默认1%
     2. 多线程时不需要竞争eden区，在自己的本地内存上进行分配即可，提高效率
     3. 小对象
     4. 无需调整
-    
+
 - 老年代： 大对象分配时，会分配到老年代
 - eden
 
 ### 对象进入老年代
+
 - 超过`XX:MaxTenuringThreshold`的指定次数 （YGC） 最大指定15次
- 1. Parallel Scavenge 15次
- 2. CMS 6次
- 3. G1 15次
+
+1. Parallel Scavenge 15次
+2. CMS 6次
+3. G1 15次
+
 - 动态年龄：当对象从(Eden+S1)->S2超过S2区域的50%时，将年龄最大的对象放入老年代
 - 分配担保： YGC期间，Survivor区内存不够，有新的对象进来的话，通过空间担保直接进入老年代
-![对象分配流程](../../img/GC-对象分配流程.PNG)
-  
-> 获取JVM的参数： java -XX:PrintFlagsFinal 获取所有非标参数，大概有七八百个，为了更准确的找相关的参数  
-> 我们可以使用  java -XX:PrintFlagsFinal | grep xxx
+  ![对象分配流程](../../img/GC-对象分配流程.PNG)
 
+> 获取JVM的参数： java -XX:PrintFlagsFinal 获取所有非标参数，大概有七八百个，为了更准确的找相关的参数  
+> 我们可以使用 java -XX:PrintFlagsFinal | grep xxx
 
 ## JVM调优经验
 
