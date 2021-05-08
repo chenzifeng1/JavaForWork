@@ -1,7 +1,9 @@
 # GC(Garbage Collector) 垃圾回收
 
 垃圾： 没有引用指向的对象  
-C/C++使用手动回收，可能遇到的问题：忘记回收、回收多次
+C/C++使用手动回收，可能遇到的问题：忘记回收、回收多次  
+
+GC只发生在堆内存，栈内存当对象一旦被抛出栈就自动回收释放了。
 
 ### 定位垃圾的算法
 
@@ -67,8 +69,16 @@ C/C++使用手动回收，可能遇到的问题：忘记回收、回收多次
     - 并发标记：占GC的大部分时间
     - 重新标记：标记 第二个阶段产生的垃圾
     - 并发清理：会产生浮动垃圾
-1. ZGC
-2. Shenandoah
+    CMS的问题：1. 内存碎片化，不进行压缩整理 2. 浮动垃圾 
+      CMS-Serial Old：即当CMS无法GC时，老年代的垃圾回收器就会退化为Serial Old；  
+      由于CMS在老年代使用的GC算法是`Mark-Sweep`,这种算法会带来内存碎片，CMS在GC之后如果老年代因为较多的内存碎片，使年轻代的对象无法进入老年代（有空间，但是由于碎片化，无法引入对象）。
+      这时候，即使CMS在进行GC也无法在老年代整理出足够的空闲空间来，这样就会调用`Serial Old`使用`Mark-Compact`算法，来进行整理压缩。但是`Serial Old`是单线程的垃圾回收器，如果在内存较小的时候
+      单线程的GC Collector还可以在较短时间内对老年代内存进行整理。但是一旦内存较大，单线程的整理压缩时间就长的让人难以忍受。  
+      当日志中出现`Concurrent Mode Failure`或者是`PromotionFailed`的时候，就说明CMS在GC过程中产生了大量的内存碎片了。  
+      避免方式：降低阈值，-XX:+CMSInitiatingOccupancyFraction (1.8默认是92%，可以降低，是)
+4. G1:只回收部分垃圾来减少停顿时间。
+5. ZGC：
+6. Shenandoah
 
 1. 部分垃圾回收器使用的模型：
 
@@ -122,8 +132,14 @@ C/C++使用手动回收，可能遇到的问题：忘记回收、回收多次
 - 分配担保： YGC期间，Survivor区内存不够，有新的对象进来的话，通过空间担保直接进入老年代
   ![对象分配流程](../../img/GC-对象分配流程.PNG)
 
-> 获取JVM的参数： java -XX:PrintFlagsFinal 获取所有非标参数，大概有七八百个，为了更准确的找相关的参数  
-> 我们可以使用 java -XX:PrintFlagsFinal | grep xxx
+> 获取JVM的参数： java -XX:+PrintFlagsFinal 获取所有非标参数，大概有七八百个，为了更准确的找相关的参数  
+> 我们可以使用 java -XX:+PrintFlagsFinal | findstr xxx
 
+### Concurrent Mark（并发标记）阶段的算法：
+1. ZGC会使用染色指针来标记每个对象的状态（四位对应四个状态） + 读屏障。
+2. G1使用三色标记+SATB
+3. CMS使用三色标记+Incremental Update  
+
+**三色标记算法**：
 ## JVM调优经验
 
