@@ -5,6 +5,15 @@ C/C++使用手动回收，可能遇到的问题：忘记回收、回收多次
 
 GC只发生在堆内存，栈内存当对象一旦被抛出栈就自动回收释放了。
 
+堆： 新生代+老年代  
+堆之外的空间： Method Area,1.7实现是Permanent Generation（永久代），1.8及以后是MetaSpace(元数据区)   
+字符串常量：1.7放在Method Area ; 1.8放到了堆里面  
+- 新生代： Eden区+2个Survivor区
+    1. YGC回收之后，大多数对象被回收，没有被回收的对象进入S0
+    2. 再次YGC之后，Eden区和S0区活着的对象-> S1
+    3. 在进行一次YGC,Eden区和S1区活着的对象-> S0
+    4. 年龄足够，进入老年代（一般15，CMS是6次）
+    5. S区装不下的对象也会分配到老年区
 ### 定位垃圾的算法
 
 1. 引用计数 (reference count)： 每个对象都是用计数器来记录引用数， 无法解决循环引用问题
@@ -141,5 +150,66 @@ GC只发生在堆内存，栈内存当对象一旦被抛出栈就自动回收释
 3. CMS使用三色标记+Incremental Update  
 
 **三色标记算法**：
-## JVM调优经验
 
+
+# JVM调优经验
+
+## 常见的垃圾回收器组合参数设定
+
+- -XX:+UseSerialGC : Serial New + Serial Old
+    - 小型程序，默认不会是这种选择，HotSpot会根据计算机配置和Jdk版本来选择垃圾回收器
+    
+- -XX:+UseConc(urrent)MarkSweepGC : ParNew + CMS +Serial Old
+- -XX:+UseParallelGC : Parallel Scavenge + Parallel Old(1.8默认) 【Parallel Scavenge + Serial Old】
+- -XX:+USeParallelOldGC : Parallel Scavenge + Parallel Old
+- -XX:+UseG1GC : G1 GC
+
+### JVM常用命令行参数
+- HotSpot参数分类：
+> 标准参数： - 开头 所有HotSpot版本都支持  
+> 非标准参数: -X 开头 部分HotSpot版本可能不支持  
+> 不稳定参数： -XX 开头 下个版本可能就废除了
+
+### 常用的JVM命令：
+- -XX:+PrintCommandLineFlags  : 查看JVM开启的基本参数
+- -Xmn[10M]:指定新生代大小 -Xms[40M]：最小的堆大小，-Xmx[40M]:最大的堆大小 注：一般来说，将最小堆大小与最大堆大小设为相同值，防止因为对内元素变化带来的堆的收缩与扩张。
+-  打印GC信息
+   1. -XX:+PrintGC ClassName : 打印GC信息  
+   2. -XX:+PrintGCDetails ：打印GC的细节  
+   3. -XX:+PrintGCTimeStamps : 打印GC发生的时间戳
+   4. -XX:+PrintGCCauses: 打印GC发生的原因
+    
+### 调优基础概念
+- 吞吐量: 用户代码执行时间/(用户代码执行时间+GC时间）
+- 响应时间： STW越短，响应时间越短  
+
+调优首先确定调优的目标：吞吐量优先？响应时间优先？均衡？
+
+1. 吞吐量优先的（一般）： 垃圾回收器使用PS+PO  
+2. 响应时间优先（一般）：垃圾回收器使用ParNew+CMS/G1（优先）
+    
+### 什么是调优
+1. 根据需求进行JVM规划和预调优
+2. 优化运行JVM运行时环境
+3. 解决JVM运行过程中出现的各种问题（比如OOM）
+
+### 预规划
+- 针对业务场景进行调优，没有实际的业务场景谈不上调优。并发：TPS/QPS 
+- 无监控，不调优：监控压力测试，可以看到结果
+- 步骤：
+    1. 熟悉业务场景：追求吞吐量还是追求响应时间
+    2. 选择垃圾回收器组合
+    3. 计算内存需求（经验值 1.5G->16G,反而性能下降了，）
+    4. 选定CPU(越高越好)   
+    5. 设定年代大小，升级年龄
+    6. 设定日志参数
+       > -Xloggc:/opt/xxx/logs/xxx-xxx-gc-%t.log : %t 按照系统时间产生  
+        -XX:+UseGCLogFileRotation  :循环使用  
+        -XX:+NumberOfGCLogFile=5   :GC日志文件个数  
+        -XX:+GCLogFileSize=20M  :每个GC文件大小为20M
+        -XX:+PrintGCDetails  :打印GC细节  
+        -XX:+PrintGCDateStamps :打印GC时间戳  
+        -XX:+PrintGCCause :打印GC原因
+       > 
+  > 
+    7. 观察日志情况
