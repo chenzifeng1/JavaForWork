@@ -1,19 +1,21 @@
 # GC(Garbage Collector) 垃圾回收
 
 垃圾： 没有引用指向的对象  
-C/C++使用手动回收，可能遇到的问题：忘记回收、回收多次  
+C/C++使用手动回收，可能遇到的问题：忘记回收、回收多次
 
 GC只发生在堆内存，栈内存当对象一旦被抛出栈就自动回收释放了。
 
 堆： 新生代+老年代  
 堆之外的空间： Method Area,1.7实现是Permanent Generation（永久代），1.8及以后是MetaSpace(元数据区)   
-字符串常量：1.7放在Method Area ; 1.8放到了堆里面  
+字符串常量：1.7放在Method Area ; 1.8放到了堆里面
+
 - 新生代： Eden区+2个Survivor区
     1. YGC回收之后，大多数对象被回收，没有被回收的对象进入S0
     2. 再次YGC之后，Eden区和S0区活着的对象-> S1
     3. 在进行一次YGC,Eden区和S1区活着的对象-> S0
     4. 年龄足够，进入老年代（一般15，CMS是6次）
     5. S区装不下的对象也会分配到老年区
+
 ### 定位垃圾的算法
 
 1. 引用计数 (reference count)： 每个对象都是用计数器来记录引用数， 无法解决循环引用问题
@@ -45,10 +47,8 @@ GC只发生在堆内存，栈内存当对象一旦被抛出栈就自动回收释
 ![常见的垃圾回收器](../../img/GC-垃圾回收器.PNG)
 分代的垃圾回收器：
 
-- JDK诞生的时候，Serial就追随了，为了提高效率，诞生了PS,为了配合CMS，诞生了PN。CMS是JDK1.4后期引入，
-  是里程碑式的GC,CMS开启了并发回收的过程，但CMS的毛病较多.   
-  并发回收的原因是因为无法忍受STW，即使是多线程，STW的时间也比较长
-  Serial/Serial Old：单线程的 Parallel/Parallel Old:多线程的
+- JDK诞生的时候，Serial就追随了，为了提高效率，诞生了PS,为了配合CMS，诞生了PN。CMS是JDK1.4后期引入， 是里程碑式的GC,CMS开启了并发回收的过程，但CMS的毛病较多.   
+  并发回收的原因是因为无法忍受STW，即使是多线程，STW的时间也比较长 Serial/Serial Old：单线程的 Parallel/Parallel Old:多线程的
 - CMS JDK8及之前
 - G1: JDK9 G1仅在逻辑上分为年代和老年代，物理上不分代。
 - Serial,Parallel,ParNew,CMS,Serial Old,Parallel Old 在逻辑和物理上均分代。
@@ -59,27 +59,27 @@ GC只发生在堆内存，栈内存当对象一旦被抛出栈就自动回收释
 1. Serial + Serial Old  
    ![serial](../../img/GC-Collector-serial.PNG)
     1. Serial ： a stop-the-world, copying collector which use a single GC Thread
-    2. Serial Old : a stop-the-world Mark-sweep-compact collector which use a single GC Thread    
+    2. Serial Old : a stop-the-world Mark-sweep-compact collector which use a single GC Thread
+
     - safe point: 安全点，线程停止需要一个过程，因此需要在一定的时间点保证全部线程都停止
     - 停顿时间： 用于GC thread
-    `Serial`和`Serial Old` 模式相同，只不过使用不同的垃圾回收算法，一个是`Copying`,一个是`Mark-Sweep/Mark-Compact`。 相应的，它们的工作区也不一样，`Serial`
-    工作在年轻代，而`Serial Old`工作在老年代。
+      `Serial`和`Serial Old` 模式相同，只不过使用不同的垃圾回收算法，一个是`Copying`,一个是`Mark-Sweep/Mark-Compact`。 相应的，它们的工作区也不一样，`Serial`
+      工作在年轻代，而`Serial Old`工作在老年代。
 
 2. Parallel Scavenge+ Parallel Old (PS+PO): 默认情况下的垃圾回收器
    ![PS+PO](../../img/GC-Collector-ps+po.PNG)
-   1. Parallel Scavenge: a stop-the-world, copying collector which use multiple GC Threads
-   2. Parallel Old:  a compact collect which use multiple GC threads
-    
+    1. Parallel Scavenge: a stop-the-world, copying collector which use multiple GC Threads
+    2. Parallel Old:  a compact collect which use multiple GC threads
+
 3. ParNew + CMS ：
-   1. ParNew: 在Parallel Scavenge基础上做了一些增强，来适合CMS
-   2. CMS：concurrent mark sweep  
-    ![CMS](../../img/GC-Collector-CMS.PNG)
+    1. ParNew: 在Parallel Scavenge基础上做了一些增强，来适合CMS
+    2. CMS：concurrent mark sweep  
+       ![CMS](../../img/GC-Collector-CMS.PNG)
+
     - 初始标记：标记根对象，STW
     - 并发标记：占GC的大部分时间
     - 重新标记：标记 第二个阶段产生的垃圾
-    - 并发清理：会产生浮动垃圾
-    CMS的问题：1. 内存碎片化，不进行压缩整理 2. 浮动垃圾 
-      CMS-Serial Old：即当CMS无法GC时，老年代的垃圾回收器就会退化为Serial Old；  
+    - 并发清理：会产生浮动垃圾 CMS的问题：1. 内存碎片化，不进行压缩整理 2. 浮动垃圾 CMS-Serial Old：即当CMS无法GC时，老年代的垃圾回收器就会退化为Serial Old；  
       由于CMS在老年代使用的GC算法是`Mark-Sweep`,这种算法会带来内存碎片，CMS在GC之后如果老年代因为较多的内存碎片，使年轻代的对象无法进入老年代（有空间，但是由于碎片化，无法引入对象）。
       这时候，即使CMS在进行GC也无法在老年代整理出足够的空闲空间来，这样就会调用`Serial Old`使用`Mark-Compact`算法，来进行整理压缩。但是`Serial Old`是单线程的垃圾回收器，如果在内存较小的时候
       单线程的GC Collector还可以在较短时间内对老年代内存进行整理。但是一旦内存较大，单线程的整理压缩时间就长的让人难以忍受。  
@@ -145,12 +145,12 @@ GC只发生在堆内存，栈内存当对象一旦被抛出栈就自动回收释
 > 我们可以使用 java -XX:+PrintFlagsFinal | findstr xxx
 
 ### Concurrent Mark（并发标记）阶段的算法：
+
 1. ZGC会使用染色指针来标记每个对象的状态（四位对应四个状态） + 读屏障。
 2. G1使用三色标记+SATB
-3. CMS使用三色标记+Incremental Update  
+3. CMS使用三色标记+Incremental Update
 
 **三色标记算法**：
-
 
 # JVM调优经验
 
@@ -158,58 +158,77 @@ GC只发生在堆内存，栈内存当对象一旦被抛出栈就自动回收释
 
 - -XX:+UseSerialGC : Serial New + Serial Old
     - 小型程序，默认不会是这种选择，HotSpot会根据计算机配置和Jdk版本来选择垃圾回收器
-    
+
 - -XX:+UseConc(urrent)MarkSweepGC : ParNew + CMS +Serial Old
 - -XX:+UseParallelGC : Parallel Scavenge + Parallel Old(1.8默认) 【Parallel Scavenge + Serial Old】
 - -XX:+USeParallelOldGC : Parallel Scavenge + Parallel Old
 - -XX:+UseG1GC : G1 GC
 
 ### JVM常用命令行参数
+
 - HotSpot参数分类：
+
 > 标准参数： - 开头 所有HotSpot版本都支持  
 > 非标准参数: -X 开头 部分HotSpot版本可能不支持  
 > 不稳定参数： -XX 开头 下个版本可能就废除了
 
 ### 常用的JVM命令：
+
 - -XX:+PrintCommandLineFlags  : 查看JVM开启的基本参数
 - -Xmn[10M]:指定新生代大小 -Xms[40M]：最小的堆大小，-Xmx[40M]:最大的堆大小 注：一般来说，将最小堆大小与最大堆大小设为相同值，防止因为对内元素变化带来的堆的收缩与扩张。
--  打印GC信息
-   1. -XX:+PrintGC ClassName : 打印GC信息  
-   2. -XX:+PrintGCDetails ：打印GC的细节  
-   3. -XX:+PrintGCTimeStamps : 打印GC发生的时间戳
-   4. -XX:+PrintGCCauses: 打印GC发生的原因
-    
+- 打印GC信息
+    1. -XX:+PrintGC ClassName : 打印GC信息
+    2. -XX:+PrintGCDetails ：打印GC的细节
+    3. -XX:+PrintGCTimeStamps : 打印GC发生的时间戳
+    4. -XX:+PrintGCCauses: 打印GC发生的原因
+
 ### 调优基础概念
+
 - 吞吐量: 用户代码执行时间/(用户代码执行时间+GC时间）
-- 响应时间： STW越短，响应时间越短  
+- 响应时间： STW越短，响应时间越短
 
 调优首先确定调优的目标：吞吐量优先？响应时间优先？均衡？
 
-1. 吞吐量优先的（一般）： 垃圾回收器使用PS+PO  
+1. 吞吐量优先的（一般）： 垃圾回收器使用PS+PO
 2. 响应时间优先（一般）：垃圾回收器使用ParNew+CMS/G1（优先）
-    
+
 ### 什么是调优
+
 1. 根据需求进行JVM规划和预调优
 2. 优化运行JVM运行时环境
 3. 解决JVM运行过程中出现的各种问题（比如OOM）
 
 ### 预规划
-- 针对业务场景进行调优，没有实际的业务场景谈不上调优。并发：TPS/QPS 
+
+- 针对业务场景进行调优，没有实际的业务场景谈不上调优。并发：TPS/QPS
 - 无监控，不调优：监控压力测试，可以看到结果
 - 步骤：
     1. 熟悉业务场景：追求吞吐量还是追求响应时间
     2. 选择垃圾回收器组合
     3. 计算内存需求（经验值 1.5G->16G,反而性能下降了，）
-    4. 选定CPU(越高越好)   
+    4. 选定CPU(越高越好)
     5. 设定年代大小，升级年龄
     6. 设定日志参数
        > -Xloggc:/opt/xxx/logs/xxx-xxx-gc-%t.log : %t 按照系统时间产生  
-        -XX:+UseGCLogFileRotation  :循环使用  
-        -XX:+NumberOfGCLogFile=5   :GC日志文件个数  
-        -XX:+GCLogFileSize=20M  :每个GC文件大小为20M
-        -XX:+PrintGCDetails  :打印GC细节  
-        -XX:+PrintGCDateStamps :打印GC时间戳  
-        -XX:+PrintGCCause :打印GC原因
-       > 
-  > 
+       -XX:+UseGCLogFileRotation  :循环使用  
+       -XX:+NumberOfGCLogFile=5   :GC日志文件个数  
+       -XX:+GCLogFileSize=20M  :每个GC文件大小为20M -XX:+PrintGCDetails  :打印GC细节  
+       -XX:+PrintGCDateStamps :打印GC时间戳  
+       -XX:+PrintGCCause :打印GC原因
+
     7. 观察日志情况
+
+### 优化JVM环境
+
+1. 案列：50万PV的资料类网站（磁盘提取资料到内存），原服务器32位，1.5G的堆。用户反应响应时间长。 现在优化为64位服务器，16G的堆，优化完成之后响应时间却变得更长了，请分析原因：
+    1. 原服务器响应时间长的原因: 频繁用户访问，大量资料对象从服务器被加载到内存，堆较小，会产生频繁GC,STW时间增加。
+    2. 更卡顿的原因： 内存越大，FGC时间越长。扩大内存之后，FGC频率会降低，但是进行FGC的时间会增长。
+    3. 如何调优：PS+PO 换成ParNew+CMS/G1。引入并发GC
+    
+2. 一个系统CPU->100%，内存突然增大，如何定位？
+    1. CPU->100%原因：存在线程占用系统资源，1. 找出CPU高的进程 2. 该进程中的哪个线程CPU占用高，3. 查看该线程的堆栈 4. 根据栈帧找出具体方法  
+        JVM命令：1. `top` 2. `top -Hp` 3. `jstack` 4. `jstack`
+       
+    2. 内存飙高： 找出堆内存`jmap`,分析（`jhat`,`jvisualvm`,`mat`,`jprofiler`...）
+    
+3. 
