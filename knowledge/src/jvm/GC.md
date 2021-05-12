@@ -238,4 +238,24 @@ GC只发生在堆内存，栈内存当对象一旦被抛出栈就自动回收释
       假如；存在100个线程中，其中很多线程都在waiting lock ,那么可能由于线程之间的资源争夺导致发生了`死锁`。首先要找到是哪个线程持有了其他线程正在等待的`锁对象`
        
 ### jconsole远程连接    
-1. 程序启动加入参数：
+1. 程序启动加入参数： java自带的远程监控组件 jmx
+   > java -Djava.rmi.server.hostname=xx.xx.xx.xx -Dcom.sun.management.jmxremote 
+   > -Dcom.sun.management.jmxremote.port=[port]
+   > -Dcom.sun.management.jmxremote.authenticate=false
+   > -Dcom.sun.management.jmxremote.ssl=false
+   
+### jvisualvm 远程连接
+
+### 如何定位OOM问题
+- 不要回答用图形节目，jmx的远程监控对工作线程的影响比较大。
+    1. 不用图形界面，用什么： cmdline arthas(阿里的组件)
+    2. 图形化节目有用吗？测试可以用图形界面进行监控
+    
+1. `jamp -histo PID | head -20` 查找前20个占用内存最高的进程。  （<font color = "red">这个命令对进程的影响相对较小</font>）
+   
+2. `jmap -Dump:format=b,file=xxx pid/jmap -histo`（<font color = "red">这个命令对进程的影响很大，不建议在线上使用</font>）
+   但是这个命令有个坑：如果线上系统的内存比较大，在jmap执行期间，可能会对进程产生较大影响，甚至卡顿（不适合电商）。
+   1. 设定了参数HeapDump： 在OOM的时候会自动产生`堆转储文件`  到处堆转储文件的命令：
+   2. <font color="red">做了服务器备份（高可用），停掉一台服务器对整个系统影响不大</font>
+   3. 在线定位 `arthas`
+2. 
