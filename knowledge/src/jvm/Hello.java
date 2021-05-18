@@ -16,9 +16,12 @@ public class Hello {
     }
 
     public static void main(String[] args) {
-        int i = 8;
-        i = i++;
-        System.out.println(i);
+
+        System.out.println((byte)255&0xff);
+        System.out.println((byte)255);
+        System.out.println((byte)127&0xff);
+        System.out.println((byte)128);
+        System.out.println((byte)128&0xff);
 
         Hello h = new Hello();
     }
