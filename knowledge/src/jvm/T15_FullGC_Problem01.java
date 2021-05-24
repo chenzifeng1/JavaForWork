@@ -39,6 +39,8 @@ public class T15_FullGC_Problem01 {
         for (;;){
             modelFit();
             Thread.sleep(100);
+            System.out.println("123456");
+            System.out.println("sleep over");
         }
     }
 
