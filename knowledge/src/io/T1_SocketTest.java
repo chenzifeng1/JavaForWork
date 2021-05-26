@@ -32,13 +32,10 @@ public class T1_SocketTest {
                         this.ss = s;
                         return this;
                     }
-
                     @Override
                     public void run() {
-                        
+
                     }
-
-
                 }.setSs(client)
 
                 ).start();
