@@ -37,87 +37,102 @@
     - HashMap的思路：-1 无符号右移给定位数。int型的-1转二进制的值为`1111 1111 1111 1111 1111 1111 1111 1111`,无符号右移时，高位补0。无符号右移一位，获得的数就变为正数了。
       那么该如何获取右移的位数呢，代码如下，使用了Integer类的一个方法`numberOfLeadingZeros`，我们可以看一下具体实现。
 
+   ```java
+   public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Cloneable, Serializable {
+   
+       /**
+        * Returns a power of two size for the given target capacity.
+        * 1.7的实现
+        * @param initialCapacity 初始化容量
+        * @return
+        */
+       static final int tableSizeFor(int initialCapacity) {
+           int capacity = 1;
+           while (capacity < initialCapacity) {
+               capacity <<= 1;
+           }
+           return capacity;
+       }
+   
+       /**
+        * Returns a power of two size for the given target capacity.
+        * @param cap
+        * @return
+        */
+       static final int tableSizeFor(int cap) {
+           int n = cap - 1;
+           n |= n >>> 1;
+           n |= n >>> 2;
+           n |= n >>> 4;
+           n |= n >>> 8;
+           n |= n >>> 16;
+           return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
+       }
+   
+       /**
+        * Returns a power of two size for the given target capacity.
+        * jdk1.9及以后的实现
+        * @param cap
+        * @return
+        */
+       static final int tableSizeFor(int cap) {
+           int n = -1 >>> Integer.numberOfLeadingZeros(cap - 1);
+           return n < 0 ? 1 : (n >= 1073741824 ? 1073741824 : n + 1);
+       }
+   
+       // Integer的numberOfLeadingZeros方法 
+       public static int numberOfLeadingZeros(int i) {
+           if (i <= 0) {
+               return i == 0 ? 32 : 0;
+           } else {
+               int n = 31;
+               if (i >= 65536) {
+                   n -= 16;
+                   i >>>= 16;
+               }
+   
+               if (i >= 256) {
+                   n -= 8;
+                   i >>>= 8;
+               }
+   
+               if (i >= 16) {
+                   n -= 4;
+                   i >>>= 4;
+               }
+   
+               if (i >= 4) {
+                   n -= 2;
+                   i >>>= 2;
+               }
+   
+               return n - (i >>> 1);
+           }
+       }
+   }
+   ```
+
+   比较三个版本关于`tableSizeFor`的区别：
+
+    1. jdk7 与自己的思路相似，通过与初始化容量做对比，然后不断右移位数，这样思路很简单，但是最坏情况下要移动30位才能符合要求，这样的话效率较低
+    2. jdk8 通过`逻辑右移`和`|`操作来不断将n对应的高位设置为1，最后+1得到了不小于n的2的最小幂数
+       ![tableSizeFor](../../img/容器-HashMap-tableSizeFor.PNG)
+       如图所示，在经过 两次`|`和`>>>`运算之后，n的最高有效位的高四位都变成1了，可以得知在经过`n|=n>>>4`和`n|=n>>>8`以及`n|=n>>>16`之后，最高有效位之后的8位，16位，32位都会变成1。
+       但这里有个问题，就是当n较小的时候，不需要右移那么多位。虽然这些操作并不会将最高有效位之前的位上的0变为1，但是确实在某种情况下变成了不必要的操作。
+       于是在jdk1.9之后，HashMap的`tableSizeFor(int)`
+       这个方法就有进行了优化
+    3. jdk11(不一定是11开始使用的，只是笔者看的11的源码)使用了`Integer`封装的方法`numberOfLeadingZeros(int)`
+       ，这个方法大返回一个右移的位数，我们只需要用-1右移这个位数即可。然后看一下右移之后的数有没有超过限制。对没有超过限制的n做+1操作（这个方法以后在详解）。
+       这里需要知道的是，这个方法会根据传值的大小来判断需要移动几位，如果小于65536，也就意味着高16位为0，可能移动的位是低16位。小于256即只有低8位需要移动，前24位都为0.
+       这样，在面对较小的正数的时候，不必要对前几位做不必要操作。
+
+2. 关于散列函数`hash()`:
+
 ```java
 public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Cloneable, Serializable {
-
-    
-    /**
-     * Returns a power of two size for the given target capacity.
-     * jdk1.9及以后的实现
-     * @param cap
-     * @return
-     */
-    static final int tableSizeFor(int cap) {
-        int n = -1 >>> Integer.numberOfLeadingZeros(cap - 1);
-        return n < 0 ? 1 : (n >= 1073741824 ? 1073741824 : n + 1);
-    }
-
-    /**
-     * Returns a power of two size for the given target capacity.
-     * @param cap
-     * @return
-     */
-    static final int tableSizeFor(int cap) {
-        int n = cap - 1;
-        n |= n >>> 1;
-        n |= n >>> 2;
-        n |= n >>> 4;
-        n |= n >>> 8;
-        n |= n >>> 16;
-        return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
-    }
-
-    /**
-     * Returns a power of two size for the given target capacity.
-     * 1.7的实现
-     * @param cap
-     * @return
-     */
-    static final int tableSizeFor(int cap){
-        int capacity = 1;
-        while (capacity < initialCapacity){
-            capacity <<= 1;
-        }
-    }
-    
-    // Integer的numberOfLeadingZeros方法 
-    public static int numberOfLeadingZeros(int i) {
-        if (i <= 0) {
-            return i == 0 ? 32 : 0;
-        } else {
-            int n = 31;
-            if (i >= 65536) {
-                n -= 16;
-                i >>>= 16;
-            }
-
-            if (i >= 256) {
-                n -= 8;
-                i >>>= 8;
-            }
-
-            if (i >= 16) {
-                n -= 4;
-                i >>>= 4;
-            }
-
-            if (i >= 4) {
-                n -= 2;
-                i >>>= 2;
-            }
-
-            return n - (i >>> 1);
-        }
+    static final int hash(Object key) {
+        int h;
+        return key == null ? 0 : (h = key.hashCode()) ^ h >>> 16;
     }
 }
-
-
-
 ```
-
-
-  
-
-
-
-
