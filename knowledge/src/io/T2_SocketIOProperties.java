@@ -10,25 +10,13 @@ import java.util.concurrent.*;
 
 /**
  * @Author: czf
- * @Description: 多线程解决阻塞IO的问题：
- * 1. BIO的问题所在：阻塞，在接收连接的时候 `accept()`是阻塞的，在接收数据的时候也是阻塞的。
- * 2. 如果我们一个服务器同时要和多个客户端建立来连接，并进行数据交换。那么BIO模型中就不能在主线程中接收数据时发生阻塞。只能另启一个线程来接收数据，这样其他的客户端才能继续建立连接
- * <p>
- * 伪代码：
- * ServerSocket  ss = new SeverSocket()
- * while(true) {
- * Socket client = ss.accept //建立连接，此处是阻塞的，可以接收，因为每当有连接进来才会放开阻塞，能保证连接不会被拒绝
- * <p>
- * InputStream in = client.getInputStream();
- * BufferReader br = new BufferReader(new InputStreamReader(in));
- * br.read()  //这里不能阻塞，因为如果这里阻塞了，在第一个请求进来却没有传输数据的时候，主线程阻塞在这里，后续的请求无法被accept。 所以这里每个请求在接收数据的时候都需要new一个线程来接收。
- * 这个就是基本的BIO模型
- * <p>
- * }
+ * @Description:
+ *  Socket IO 执行时可设置的参数
+ *
  * @Date: 2021-05-27 18:42
  * @Version: 1.0
  **/
-public class T2_SocketIOPropertites {
+public class T2_SocketIOProperties {
 
     static ThreadPoolExecutor socketThreadPool = new ThreadPoolExecutor(10,
             15,
@@ -40,17 +28,51 @@ public class T2_SocketIOPropertites {
 
 
     // server socket listen property:以下是Server Socket监听用到的属性1
+
+    /**
+     * 数据接收缓存区大小
+     */
     private static final int RECEIVE_BUFFER = 10;
+    /**
+     * 表示等待客户连接的超时时间。一般不设置，会持续等待
+     */
     private static final int SO_TIMEOUT = 0;
+    /**
+     * 表示是否允许重用服务器所绑定的地址。一般不设置
+     */
     private static final boolean REUSE_ADDR = false;
+    /**
+     * 允许几个额外的client连入
+     */
     private static final int BACK_LOG = 2;
+
+
     //client socket listen property on server endpoint: 服务端需要设置的客户端监听属性
+
     private static final boolean CLI_KEEPALIVE = false;
+    /**
+     * 置 OOBINLINE 选项时，在套接字上接收的所有 TCP 紧急数据都将通过套接字输入流接收
+     */
     private static final boolean CLI_OOB = false;
+    /**
+     * 接收缓存区大小
+     */
     private static final int CLI_REC_BUF = 20;
-    private static final boolean CLI_REUSE_ADDR = false;
+    /**
+     * 发送缓存区大小
+     */
     private static final int CLI_SEND_BUF = 20;
+    /**
+     * 是否
+     */
+    private static final boolean CLI_REUSE_ADDR = false;
+    /**
+     * 是否允许关闭时逗留
+     */
     private static final boolean CLI_LINGER = true;
+    /**
+     * 指定关闭时逗留的超时值
+     */
     private static final int CLI_LINGER_N = 0;
     private static final int CLI_TIMEOUT = 0;
     private static final boolean CLI_NO_DELAY = false;
@@ -69,6 +91,10 @@ public class T2_SocketIOPropertites {
             serverSocket.setReuseAddress(REUSE_ADDR);
             // 设置接收缓冲区的大小
             serverSocket.setReceiveBufferSize(RECEIVE_BUFFER);
+
+
+
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -86,8 +112,21 @@ public class T2_SocketIOPropertites {
         @Override
         public void run() {
             try {
-                Socket accept = serverSocket.accept();
-                InputStream inputStream = accept.getInputStream();
+                Socket client = serverSocket.accept();
+
+                //客户端是否允许
+                client.setReuseAddress(CLI_REUSE_ADDR);
+                client.setKeepAlive(CLI_KEEPALIVE);
+                //关闭时是否逗留，以及逗留时长
+                client.setSoLinger(CLI_LINGER,CLI_LINGER_N);
+                client.setSoTimeout(CLI_TIMEOUT);
+                //置 OOBINLINE 选项时，在套接字上接收的所有 TCP 紧急数据都将通过套接字输入流接收
+                client.setOOBInline(CLI_OOB);
+                client.setReceiveBufferSize(CLI_REC_BUF);
+                client.setSendBufferSize(CLI_SEND_BUF);
+                client.setTcpNoDelay(CLI_NO_DELAY);
+
+                InputStream inputStream = client.getInputStream();
                 BufferedReader br = new BufferedReader(new InputStreamReader(inputStream)) ;
                 char[] data = new char[1024];
                 while (true) {

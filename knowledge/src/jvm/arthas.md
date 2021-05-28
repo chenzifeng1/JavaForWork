@@ -53,5 +53,8 @@ Arthas可以为我们解决很多问题： 如HTTP请求的qps, rt, 错误数, �
    
   >redefine命令和jad/watch/trace/monitor/tt等命令会冲突。执行完redefine之后，如果再执行上面提到的命令，则会把redefine的字节码重置。
   原因是jdk本身redefine和Retransform是不同的机制，同时使用两种机制来更新字节码，只有最后修改的会生效。
+  
+
+ 
 
   

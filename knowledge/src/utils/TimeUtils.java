@@ -1,9 +1,12 @@
 package utils;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class TimeUtils {
 
+    public static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     /**
      * 睡眠
@@ -18,5 +21,13 @@ public class TimeUtils {
         }
     }
 
+    /**
+     * 获取时间
+     * @param date
+     * @return
+     */
+    public static String date2Str(Date date){
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date);
+    }
 
 }
