@@ -95,7 +95,7 @@ public class SocketMultiplexingSingleThread_1 {
             ByteBuffer buffer = ByteBuffer.allocate(8096);
             //这里将新的fd注册到selector开辟的空间中去 调起了epoll_ctl
             //这里是非阻塞的
-            client.register(selector,SelectionKey.OP_ACCEPT);
+            client.register(selector,SelectionKey.OP_ACCEPT,buffer);
             System.out.println("-----------------------------------------------------");
             System.out.println("新的客户端注册进来："+client.getRemoteAddress());
             System.out.println("-----------------------------------------------------");
