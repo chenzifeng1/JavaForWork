@@ -60,7 +60,7 @@ public class SelectionThreadGroup {
 
         // 如果是多个selectorThread的话，我们需要选一个
         SelectorThread next = next();
-        next.bind(port);
+        next.bind(server);
     }
 
     /**
@@ -69,7 +69,7 @@ public class SelectionThreadGroup {
      */
     private void nextSelector(Channel server) {
         SelectorThread next = next();
-        next.bind(new InetSocketAddress());
+        next.bind(server);
     }
 
 

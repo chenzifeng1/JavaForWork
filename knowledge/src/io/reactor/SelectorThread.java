@@ -2,10 +2,8 @@ package io.reactor;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.channels.Channel;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
+import java.nio.ByteBuffer;
+import java.nio.channels.*;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -53,6 +51,8 @@ public class SelectorThread implements Runnable{
                         }
                     }
                 }
+
+                // run task deal
             }
         }catch (IOException e) {
             e.printStackTrace();
@@ -60,11 +60,18 @@ public class SelectorThread implements Runnable{
 
     }
 
-    public void bind(ServerSocketChannel channel) {
+    public void bind(Channel channel) {
         try {
-            channel.bind(new InetSocketAddress(port));
-            selector = Selector.open();
-            channel.register(selector, SelectionKey.OP_ACCEPT);
+            if(channel instanceof ServerSocketChannel){
+                ServerSocketChannel sever = (ServerSocketChannel) channel;
+                sever.register(selector,SelectionKey.OP_ACCEPT);
+            }else if(channel instanceof SocketChannel){
+                SocketChannel client = (SocketChannel) channel;
+                ByteBuffer buffer = ByteBuffer.allocate(4096);
+                client.register(selector,SelectionKey.OP_READ,buffer);
+
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
