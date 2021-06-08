@@ -32,7 +32,7 @@ public class SocketMultiplexingSingleThread_2 {
             0,
             TimeUnit.SECONDS,
             new ArrayBlockingQueue<Runnable>(50),
-            (r)->new Thread(r,"读事件处理线程")
+            (r) -> new Thread(r, "读事件处理线程")
     );
     private static final ThreadPoolExecutor WRITE_HANDLER_POOL_SIZE = new ThreadPoolExecutor(
             3,
@@ -40,14 +40,14 @@ public class SocketMultiplexingSingleThread_2 {
             0,
             TimeUnit.SECONDS,
             new ArrayBlockingQueue<Runnable>(50),
-            (r)->new Thread(r,"写事件处理线程")
+            (r) -> new Thread(r, "写事件处理线程")
     );
 
     private int port = 8084;
     private ServerSocketChannel serverSocketChannel;
     private Selector selector;
 
-    private void initServer(){
+    private void initServer() {
 
         try {
             serverSocketChannel = ServerSocketChannel.open();
@@ -80,16 +80,17 @@ public class SocketMultiplexingSingleThread_2 {
                         if (key.isAcceptable()) {
                             acceptHandler(key);
                         } else if (key.isReadable()) {
+                            // key.cancel(); 这里有个问题：selectKey实际上会调用 epoll_ctl(fd4,del)
+                            // 会触发系统调用 所以我们使用另一种方式来完成多线程情况下，key遍历
+                            key.interestOps(key.interestOps() | ~SelectionKey.OP_READ);
                             readHandler(key);
                         } else if (key.isWritable()) {
+                            //key.cancel(); 这里同样注掉
+                            key.interestOps(key.interestOps()|~SelectionKey.OP_WRITE);
                             writeHandler(key);
                         }
                     }
-
-
                 }
-
-
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -97,13 +98,13 @@ public class SocketMultiplexingSingleThread_2 {
     }
 
 
-    public void acceptHandler(SelectionKey key){
-         ServerSocketChannel channel = (ServerSocketChannel) key.channel();
-         ByteBuffer buffer = ByteBuffer.allocate(8096);
+    public void acceptHandler(SelectionKey key) {
+        ServerSocketChannel channel = (ServerSocketChannel) key.channel();
+        ByteBuffer buffer = ByteBuffer.allocate(8096);
         try {
-            SocketChannel client =  channel.accept();
+            SocketChannel client = channel.accept();
             client.configureBlocking(false);
-            channel.register(selector,SelectionKey.OP_READ,buffer);
+            channel.register(selector, SelectionKey.OP_READ, buffer);
 
             System.out.println("----------------------start--------------------------");
             System.out.println("新的客户端连入： " + client.getRemoteAddress());
@@ -118,38 +119,40 @@ public class SocketMultiplexingSingleThread_2 {
 
     /**
      * 交给线程池去完成这些操作
+     *
      * @param key
      */
-    public void readHandler(SelectionKey key){
+    public void readHandler(SelectionKey key) {
 
-      READ_HANDLER_POOL_SIZE.execute(()->{
-          SocketChannel channel= (SocketChannel) key.channel();
-          int read = 0 ;
-          ByteBuffer buffer = (ByteBuffer) key.attachment();
-          try {
-              while (true){
-                  read = channel.read(buffer);
-                  if(read>0){
-                      while(buffer.hasRemaining()){
-                          serverSocketChannel.register(selector,SelectionKey.OP_WRITE,buffer.remaining());
-                      }
-                  }else if(read==0) {
-                      break;
-                  }else {
-                      channel.close();
-                      break;
-                  }
-              }
-          }catch (IOException e){
-              e.printStackTrace();
-          }
-      });
+        READ_HANDLER_POOL_SIZE.execute(() -> {
+            SocketChannel channel = (SocketChannel) key.channel();
+            int read = 0;
+            ByteBuffer buffer = (ByteBuffer) key.attachment();
+            try {
+                while (true) {
+                    read = channel.read(buffer);
+                    if (read > 0) {
+                        key.interestOps(SelectionKey.OP_READ);
+                        while (buffer.hasRemaining()) {
+                            serverSocketChannel.register(selector, SelectionKey.OP_WRITE, buffer.remaining());
+                        }
+                    } else if (read == 0) {
+                        break;
+                    } else {
+                        channel.close();
+                        break;
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
 
     }
 
-    public void writeHandler(SelectionKey key){
-        WRITE_HANDLER_POOL_SIZE.execute(()->{
-            SocketChannel  channel = (SocketChannel) key.channel();
+    public void writeHandler(SelectionKey key) {
+        WRITE_HANDLER_POOL_SIZE.execute(() -> {
+            SocketChannel channel = (SocketChannel) key.channel();
             ByteBuffer buffer = (ByteBuffer) key.attachment();
             buffer.flip();
             try {
@@ -159,7 +162,7 @@ public class SocketMultiplexingSingleThread_2 {
                     buffer.clear();
                     channel.close();
                 }
-            }catch (IOException | InterruptedException  e){
+            } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
 

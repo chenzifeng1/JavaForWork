@@ -92,13 +92,14 @@ public class SocketMultiplexingSingleThread_1_1 {
     private void acceptHandler(SelectionKey key){
         ServerSocketChannel channel = (ServerSocketChannel) key.channel();
         try {
+            System.out.println("--------------------新的客户端 开始连接 ------------------------");
             SocketChannel client = channel.accept();
             client.configureBlocking(false);
             // 读缓冲区
             ByteBuffer buffer =  ByteBuffer.allocate(8096);
             // 将读事件注册到selector的关注事件
             client.register(selector,SelectionKey.OP_READ,buffer);
-            System.out.println("--------------------新的客户端 begin------------------------");
+
             System.out.println("连接的客户端为： " + client.getRemoteAddress());
             System.out.println("--------------------新的客户端 连入成功------------------------");
         } catch (IOException e) {
