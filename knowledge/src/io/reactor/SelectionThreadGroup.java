@@ -1,10 +1,8 @@
 package io.reactor;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.nio.channels.Channel;
 import java.nio.channels.ServerSocketChannel;
-import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -19,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class SelectionThreadGroup {
 
     private SelectorThread[] selectorThreads;
-    private AtomicInteger index = new AtomicInteger(0);
+    private AtomicInteger xid = new AtomicInteger(0);
     private ServerSocketChannel server;
 
     private static final ThreadPoolExecutor THREAD_POOL_EXECUTOR = new ThreadPoolExecutor(
@@ -78,7 +76,16 @@ public class SelectionThreadGroup {
      * @return
      */
     public SelectorThread next(){
-        return selectorThreads[index.getAndIncrement()% selectorThreads.length];
+        return selectorThreads[xid.getAndIncrement()% selectorThreads.length];
+    }
+
+    /**
+     * 第一个来做accept 其他的来处理read.write
+     * @return
+     */
+    public SelectorThread nextV2(){
+        int index  = xid.incrementAndGet()% (selectorThreads.length-1);
+        return selectorThreads[index+1];
     }
 
 }
