@@ -6,6 +6,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @Author: czf
@@ -13,7 +14,10 @@ import java.util.concurrent.TimeUnit;
  * @Date: 2021-06-10 9:56
  * @Version: 1.0
  **/
-public abstract class AbstractSelectionGroup implements SelectionThreadGroup {
+public abstract class AbstractSelectorThreadGroup implements SelectorThreadGroup {
+
+
+    AtomicInteger xid = new AtomicInteger(0);
 
     ServerSocketChannel server;
 
@@ -21,13 +25,15 @@ public abstract class AbstractSelectionGroup implements SelectionThreadGroup {
 
     private static final int DEFAULT_PORT = 8081;
 
+    static AtomicInteger threadId = new AtomicInteger(0);
+
     private static final ThreadPoolExecutor THREAD_POOL_EXECUTOR = new ThreadPoolExecutor(
             3,
             3,
             0,
             TimeUnit.SECONDS,
             new ArrayBlockingQueue<Runnable>(50),
-            (r)->new Thread(r,"Selector处理线程池")
+            (r)->new Thread(r,"Selector处理线程池"+threadId.getAndIncrement())
     );
 
     @Override
@@ -48,7 +54,7 @@ public abstract class AbstractSelectionGroup implements SelectionThreadGroup {
         next.register(server);
     }
 
-    public AbstractSelectionGroup(int num) {
+    public AbstractSelectorThreadGroup(int num) {
         selectorThreads = new SelectorThread[num];
         for (int i = 0; i < num; i++) {
             selectorThreads[i] = new SelectorThread();

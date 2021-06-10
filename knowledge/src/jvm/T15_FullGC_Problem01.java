@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 public class T15_FullGC_Problem01 {
 
-    private static class CardInfo {
+     static class CardInfo {
         BigDecimal price = new BigDecimal(0.0);
         String name = "张三";
         int age = 5;

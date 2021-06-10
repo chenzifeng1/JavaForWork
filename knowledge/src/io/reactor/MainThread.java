@@ -13,9 +13,13 @@ public class MainThread {
 
 
     public static void main(String[] args) {
-        SelectionThreadGroup selectionThreadGroup = new PollingSelectionThreadGroup(SINGLE_THREAD);
-
-        selectionThreadGroup.bind(80);
+        MultipleSelectorThreadGroup boss = new MultipleSelectorThreadGroup(MULTI_THREAD);
+        SelectorThreadGroup worker = new PollingSelectorThreadGroup(MULTI_THREAD);
+        boss.setWorker(worker);
+        boss.bind(8087);
+        boss.bind(8088);
+        boss.bind(8089);
+        boss.bind(8090);
 
 
     }

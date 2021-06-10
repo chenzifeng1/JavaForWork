@@ -6,7 +6,7 @@ import java.nio.channels.Selector;
 /**
  * @author czf
  */
-public interface SelectionThreadGroup {
+public interface SelectorThreadGroup {
 
     /**
      * 为ServerSocketChannel绑定端口
