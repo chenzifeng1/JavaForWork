@@ -13,7 +13,7 @@ public class MainThread {
 
 
     public static void main(String[] args) {
-        SelectionThreadGroup selectionThreadGroup = new SelectionThreadGroup(SINGLE_THREAD);
+        SelectionThreadGroup selectionThreadGroup = new PollingSelectionThreadGroup(SINGLE_THREAD);
 
         selectionThreadGroup.bind(80);
 

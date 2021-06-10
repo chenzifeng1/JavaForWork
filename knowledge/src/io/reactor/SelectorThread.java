@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @Author: czf
@@ -13,16 +14,21 @@ import java.util.Set;
  * @Date: 2021-06-08 14:48
  * @Version: 1.0
  **/
-public class SelectorThread implements Runnable{
+public class SelectorThread extends  ThreadLocal<LinkedBlockingQueue<Channel>> implements Runnable{
 
-    private static final int DEFAULT_PORT = 8081;
+
 
     private Selector selector;
-    private int port = 80;
+    /**
+     * lbq  在接口或者类中是固定使用方式逻辑写死了。你需要是lbq每个线程持有自己的独立对象
+     */
+    LinkedBlockingQueue<Channel> lbq = get();
+
 
     public SelectorThread() {
         try {
             selector = Selector.open();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -60,7 +66,11 @@ public class SelectorThread implements Runnable{
 
     }
 
-    public void bind(Channel channel) {
+    /**
+     * 向对象的selector中注册 channel事件，那么该selector就会关注对应的事件
+     * @param channel
+     */
+    public void register(Channel channel) {
         try {
             if(channel instanceof ServerSocketChannel){
                 ServerSocketChannel sever = (ServerSocketChannel) channel;
@@ -69,9 +79,7 @@ public class SelectorThread implements Runnable{
                 SocketChannel client = (SocketChannel) channel;
                 ByteBuffer buffer = ByteBuffer.allocate(4096);
                 client.register(selector,SelectionKey.OP_READ,buffer);
-
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         }
