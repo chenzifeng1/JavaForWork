@@ -36,9 +36,9 @@ redis的数据类型如下：
   比如说我添加了一个worker，我通过`::`来连接worker的属性，增加了`worker::name`,`worker::age`,`worker::address`。如果我想获取这个worker的name
   那么我只要获取`worker::name`对应的值就可以了。但是如果我想获取worker的全部属性呢，那我先要知道worker对象都包含哪些属性。然后再根据这些属性去取值。
   这样与服务多了一个获取属性名的过程了。但是如果我们使用了`hash`,我们可以如下定义：
-  ![hash指令](../../img/Redis_Hash指令1.PNG)  
-  我们需要获取一个hash的value 需要两个值，一个是key，一个是filed。另外如果hash->filed的value是数字类型，我们还可以进行加减运算：  
-  ![hash指令](../../img/Redis_Hash指令2.PNG)
+  ![hash指令](../../img/Redis_Hash指令1.PNG)    
+  我们需要获取一个hash的value 需要两个值，一个是key，一个是filed。另外如果hash->filed的value是数字类型，我们还可以进行加减运算：    
+  ![hash指令](../../img/Redis_Hash指令2.PNG)  
   应用场景：
     1. 点赞的内容，设置一个key来作为你的点赞，然后不同的filed作为点赞名，value是点赞内容
     2. 收藏的内容：设置一个key来作为你的收藏，然后不同的filed作为收藏名，value是收藏内容
@@ -49,36 +49,30 @@ redis的数据类型如下：
     2. set可以进行集合操作；交集，并集，差集：这个可以用的业务员场景很多，比如做共同关注，共同粉丝，推荐朋友等
     3. 随机获取：`SRANDMEMBER key [count]` count的取值可以是正数，负数，0
         1. 正数：返回去重的元素集合,返回的数量最多为本身。
-        2. 负数：返回不去重的元素集合，返回数量一定等于指定数量的绝对值 3. 0：返回空
-           ![hash指令](../../img/Redis_Set指令1.PNG)
-           场景： 抽奖，从粉丝集合选出奖品个数的人（人数大于奖品，参数为正，表示一个人最多获取一个奖品）；  
+        2. 负数：返回不去重的元素集合，返回数量一定等于指定数量的绝对值 3. 0：返回空  
+           ![hash指令](../../img/Redis_Set指令1.PNG)  
+           场景： 抽奖，从粉丝集合选出奖品个数的人（人数大于奖品，参数为正，表示一个人最多获取一个奖品）；    
            或者返回奖品个数的粉丝（奖品大于人数，参数为负，表示一个人可以获取多个奖品）。
 - zet: sorted_set,对元素排序之后的set，那么我们如何对元素进行排序呢，排序的前提是有可比较的量， 因此相比于set，sorted_set就会多出这样一个维度：score，分数。sorted_set会以此进行元素的比较。
     1. 排序： 物理内存一般遵循 左小右大的原则，且任何查询指令的操作不会影响元素在物理内存上存放位置。    
-       我们展示sorted_set的元素可以从两个维度上出发：一个是下标
-       ![sorted_set 基于下标进行展示](../../img/Redis_SortedSet指令1.PNG)  
-       一个是分数 score。           
-        ![sorted_set基于scores进行展示](../../img/Redis_SortedSet指令2.PNG)  
+       我们展示sorted_set的元素可以从两个维度上出发：一个是下标  
+       ![sorted_set 基于下标进行展示](../../img/Redis_SortedSet指令1.PNG)    
+       一个是分数 score。               
+        ![sorted_set基于scores进行展示](../../img/Redis_SortedSet指令2.PNG)    
         从图上可以比较清楚的展示，基于下标的查询是来选出符合位置条件的元素。基于score的查询是基于score的范围，返回score在给定区间内的
        元素。  
-       当然，默认是升序排列的，我们可以通过在指令上增加`rev`来降序查询，比如：
-       ![sorted_set降序排列](../../img/Redis_SortedSet指令3.PNG)  
-       值得注意的是，使用降序展示的话，查询的范围是 `max min `而不是`min max`
+       当然，默认是升序排列的，我们可以通过在指令上增加`rev`来降序查询，比如：  
+       ![sorted_set降序排列](../../img/Redis_SortedSet指令3.PNG)    
+       值得注意的是，使用降序展示的话，查询的范围是 `max min `而不是`min max`  
     2. 集合操作：sorted_set本质上也是一种set，所以也包含集合的对应操作，但是相比于set，当zset在集合操作中的两个集合对于相同的元素该如何进行合并呢，
-       要知道两个不同集合内的相同元素可能存在不同的score。
-       ![sorted_set降序排列](../../img/Redis_SortedSet指令4.PNG)  
+       要知道两个不同集合内的相同元素可能存在不同的score。  
+       ![sorted_set降序排列](../../img/Redis_SortedSet指令4.PNG)    
        redis为我们提供了 `ZUNIONSTORE key [key1 key2...] [weights w1 w2] [aggregate sum|min|max]`
        这种对sorted_set进行合并操作的方法，weights跟的是每个集合所占的权重，这个权重会乘以该集合元素的score来作为新的集合该元素的score。  
        aggregate跟的是合并函数，即如果多个集合内存在相同的元素，我们该如何选择，是相加，还是取最大最小值。另外，redis会创建一个新的集合key
-       来存放合并后的元素，我们需要指明进行合并集合的数量，默认权重1，默认合并函数SUM。  
+       来存放合并后的元素，我们需要指明进行合并集合的数量，默认权重1，默认合并函数SUM。    
        ![sorted_set降序排列](../../img/Redis_SortedSet指令5.PNG)
 
     3. 底层实现 skipList(跳表)：sorted_set底层实现的数据结构是skip_list，跳跃表。
        至于跳跃表具体内容，包括如何实现元素插入，随机造层等问题，这个需要好好总结。这里仅大致介绍。
        
-## Redis 通道
- 支持多个操作在一次请求中被执行，如果每个操作都需要访问一次redis服务，会带来额外的消耗
-## Redis 发布订阅
- subscribe + pubsub
-## Redis 事务
- 不支持回滚，redis的特征就是快速，没必要为了强制数据完整性而放弃这个特征。multi + exec    
