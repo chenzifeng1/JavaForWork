@@ -1,5 +1,7 @@
 package io;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -25,6 +27,7 @@ import java.util.concurrent.TimeUnit;
  * -1 | data<-recv(fd2)
  * @Version: 1.0
  **/
+@Slf4j
 public class T4_SocketNIO {
 
     private static final int PORT = 81;
@@ -32,9 +35,6 @@ public class T4_SocketNIO {
     public static void main(String[] args) {
         // 这里是client的集合，到时候需要遍历该集合来 获取数据
         List<SocketChannel> clients = new ArrayList<>();
-
-
-
         try {
             //接受客户端的连接
             Thread.sleep(1000);
@@ -42,9 +42,10 @@ public class T4_SocketNIO {
             // 服务端开启监听，接受客户端
             ServerSocketChannel ss = ServerSocketChannel.open();
             // 绑定端口
-            ss.bind(new InetSocketAddress(9090));
+            ss.bind(new InetSocketAddress("127.0.0.1",8080));
             // 设置为不阻塞 这里时第一次设置 这里是 OS NONBLCAKING 在接受客户端连接时不进行阻塞
             ss.configureBlocking(false);
+            log.info("sever begin to listen 8080 -----");
             while(true){
                 TimeUnit.SECONDS.sleep(1);
                 SocketChannel client = ss.accept();

@@ -1,6 +1,7 @@
 package io;
 
-import utils.TimeUtils;
+
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -35,10 +36,11 @@ import java.util.concurrent.TimeUnit;
  * @Date: 2021-05-28 13:43
  * @Version: 1.0
  **/
+@Slf4j
 public class T3_SocketBIO {
 
     static final String URL = "http://127.0.0.1";
-    static final int PORT = 80;
+    static final int PORT = 8080;
     static final int BACK_LOG = 2;
 
 
@@ -56,8 +58,10 @@ public class T3_SocketBIO {
         ServerSocket server = null;
         try {
             server = new ServerSocket(PORT, BACK_LOG);
+            log.info("server begin listen--------");
             while (true) {
                 Socket client = server.accept();
+
                 threadPoolExecutor.submit(new SocketTask(client));
             }
         } catch (IOException e) {
