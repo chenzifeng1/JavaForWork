@@ -30,8 +30,8 @@ public class ReentrantLockT02 {
     private final   ReentrantLock lock = new ReentrantLock();
 
     public void m1(){
+        lock.lock();
         try {
-            lock.lock();
             for (int i = 0; i < StaticValue.TEN; i++) {
                 TimeUnit.SECONDS.sleep(1);
                 System.out.println(i);
