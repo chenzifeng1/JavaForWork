@@ -1,6 +1,7 @@
 package io.netty;
 
 import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,14 +19,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MyAcceptHandler extends ChannelInboundHandlerAdapter {
 
-    public static final String DEFAULT_HOST = "127.0.0.1";
-    public static final int DEFAULT_PORT = 8080;
+
 
     private final ChannelHandler handler;
     private final EventLoopGroup selector;
 
 
-    public MyAcceptHandler(ChannelHandler handler, EventLoopGroup selector) {
+    public MyAcceptHandler(EventLoopGroup selector,ChannelHandler handler) {
         this.handler = handler;
         this.selector = selector;
     }

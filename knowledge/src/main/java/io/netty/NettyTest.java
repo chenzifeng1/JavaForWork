@@ -18,6 +18,12 @@ public class NettyTest {
     public void clientTest(){
         MyNettyClient client = new MyNettyClient();
         client.run();
+    }
+
+    @Test
+    public void serverTest(){
+        MyNettyServer server = new MyNettyServer();
+        server.run();
 
     }
 }

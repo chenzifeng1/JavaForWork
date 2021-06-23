@@ -76,7 +76,6 @@ public class MyNettyClient {
     public void write(String string) {
         ChannelFuture channelFuture = channel.writeAndFlush(Unpooled.copiedBuffer(string.getBytes()));
 
-
         // 在这里埋入一个handler，来处理读事件
         try {
             channelFuture.sync();
@@ -87,24 +86,29 @@ public class MyNettyClient {
         }
     }
 
-    public void run(){
+    public void run() {
         ChannelPipeline pipeline = channel.pipeline();
         //这里埋入一个handler来处理读事件，这里是 响应式的
         pipeline.addLast(new MyInputHandler());
-        try {
-            log.info("开始写----------");
-            AtomicInteger counter = new AtomicInteger();
-            while (true){
-                if (counter.get() == 10) {
-                    break;
+
+        log.info("开始写----------");
+        AtomicInteger counter = new AtomicInteger();
+
+        EVENT_EXECUTORS.execute(() -> {
+            try {
+                while (true) {
+                    if (counter.get() == 10) {
+                        break;
+                    }
+                    int i = counter.incrementAndGet();
+                    write("counter " + i);
+                    TimeUnit.SECONDS.sleep(3);
                 }
-                int i = counter.incrementAndGet();
-                write("counter " + i);
-                TimeUnit.SECONDS.sleep(3);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
             }
-        }catch (Exception e){
-            log.error(e.getMessage(), e);
-        }
+
+        });
 
 
     }
