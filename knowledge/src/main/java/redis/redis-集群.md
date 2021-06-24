@@ -31,3 +31,5 @@ AKF原则主要解决了分布式服务的一些问题：
 比如说我们本机启动三个redis服务，首先启动一个端口为6379的redis服务：
     `redis-server redis`
 ### sentinel 哨兵机制
+
+
