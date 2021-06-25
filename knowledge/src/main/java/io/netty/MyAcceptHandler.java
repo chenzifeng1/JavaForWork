@@ -19,9 +19,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MyAcceptHandler extends ChannelInboundHandlerAdapter {
 
-
-
+    /**
+     * 这个处理读请求的handler
+     */
     private final ChannelHandler handler;
+    /**
+     * 这个是selector
+     */
     private final EventLoopGroup selector;
 
 
@@ -33,7 +37,8 @@ public class MyAcceptHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-        log.info("----------------服务端已启动---------------");
+        Channel channel = ctx.channel();
+        log.info("----------------客户端 {} 注册---------------",channel.remoteAddress());
     }
 
     @Override
