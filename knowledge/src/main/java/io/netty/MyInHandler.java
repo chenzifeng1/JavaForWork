@@ -1,12 +1,16 @@
 package io.netty;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.CharsetUtil;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.BufferedReader;
 
 /**
  * @ProjectName:
@@ -17,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
  * @Version: 1.0
  **/
 @Slf4j
-public class MyInputHandler extends ChannelInboundHandlerAdapter {
+public class MyInHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
@@ -30,11 +34,22 @@ public class MyInputHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        log.info("------------------异常捕获----------------------");
+        log.error(cause.getMessage(),cause);
+    }
+
+    @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ByteBuf buf = (ByteBuf) msg;
         CharSequence charSequence = buf.getCharSequence(0, buf.readableBytes(), CharsetUtil.UTF_8);
         log.info("{} 收到的数据为 {}", ctx.channel().remoteAddress(), charSequence);
-        // 之后在对客户端进行回复
-        ctx.writeAndFlush(buf);
+        // 这里不做回复了，因为这里写回复的话，就会出现 客户端->服务端 服务端->客户端 无限死循环 因为两者都是复用的同一个handler
+    }
+
+    ByteBuf ackBuf(){
+        ByteBuf buffer = ByteBufAllocator.DEFAULT.buffer(3);
+        buffer.setCharSequence(0,"ack",CharsetUtil.UTF_8);
+        return buffer;
     }
 }

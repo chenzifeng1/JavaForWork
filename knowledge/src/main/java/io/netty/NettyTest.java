@@ -17,13 +17,12 @@ public class NettyTest {
     @Test
     public void clientTest(){
         MyNettyClient client = new MyNettyClient();
-        client.run();
+        client.nettyMode();
     }
 
     @Test
     public void serverTest(){
         MyNettyServer server = new MyNettyServer();
-        server.run();
-
+        server.nettyMode();
     }
 }

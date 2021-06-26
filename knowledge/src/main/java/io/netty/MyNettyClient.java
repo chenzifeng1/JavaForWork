@@ -1,18 +1,18 @@
 package io.netty;
 
+import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.buffer.UnpooledByteBufAllocator;
-import io.netty.buffer.UnpooledDirectByteBuf;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.concurrent.Future;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
-import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -30,8 +30,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  **/
 @Slf4j
 public class MyNettyClient {
-    public static final String DEFAULT_IP = "127.0.0.1";
-    public static final int DEFAULT_PORT = 8080;
+    public static final String DEFAULT_IP = "192.168.17.27";
+    public static final int DEFAULT_PORT = 7777;
 
     NioSocketChannel channel;
     /**
@@ -61,6 +61,8 @@ public class MyNettyClient {
         try {
             //等待连接建立
             connect.sync();
+
+
             log.info("client connected ----");
         } catch (InterruptedException e) {
             log.error(e.getMessage(), e);
@@ -75,41 +77,73 @@ public class MyNettyClient {
      */
     public void write(String string) {
         ChannelFuture channelFuture = channel.writeAndFlush(Unpooled.copiedBuffer(string.getBytes()));
-
         // 在这里埋入一个handler，来处理读事件
-        try {
-            channelFuture.sync();
-            log.info("client send data success : {}", string);
-            connect.channel().closeFuture().sync();
-        } catch (InterruptedException e) {
-            log.error(e.getMessage(), e);
-        }
+//        try {
+//            channelFuture.sync();
+//            log.info("client send data success : {}", string);
+//        } catch (InterruptedException e) {
+//            log.error(e.getMessage(), e);
+//        }
     }
 
-    public void run() {
+    /**
+     * 客户端模式
+     */
+    public void clientMode() {
         ChannelPipeline pipeline = channel.pipeline();
         //这里埋入一个handler来处理读事件，这里是 响应式的
-        pipeline.addLast(new MyInputHandler());
+        pipeline.addLast(new MyInHandler());
 
         log.info("开始写----------");
-        AtomicInteger counter = new AtomicInteger();
+        final AtomicInteger counter = new AtomicInteger();
 
-        EVENT_EXECUTORS.execute(() -> {
+        Future<?> submit = EVENT_EXECUTORS.submit(() -> {
             try {
                 while (true) {
                     if (counter.get() == 10) {
                         break;
                     }
-                    int i = counter.incrementAndGet();
-                    write("counter " + i);
+
+                    write(Thread.currentThread().getName() + " counter " + counter.incrementAndGet());
                     TimeUnit.SECONDS.sleep(3);
                 }
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
-
         });
 
+        try {
+            submit.get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public void nettyMode() {
+        NioEventLoopGroup threadGroup = new NioEventLoopGroup(3);
+        Bootstrap bootstrap = new Bootstrap();
+        ChannelFuture connect = bootstrap.group(threadGroup)
+                .channel(NioSocketChannel.class)
+                // 这个ChannelInitializer 就是 Shareable 做成单例 只负责添加后续的Handler使用的
+                .handler(new ChannelInitializer<NioSocketChannel>() {
+                    @Override
+                    protected void initChannel(NioSocketChannel ch) throws Exception {
+                        ChannelPipeline pipeline = ch.pipeline();
+                        pipeline.addLast(new MyInHandler());
+                    }
+                }).connect(new InetSocketAddress(DEFAULT_IP, DEFAULT_PORT));
+        try {
+            // 获取channel
+            Channel channel = connect.sync().channel();
+            // Netty收发数据都是基于ByteBuf的，因此这里我们把要发的数据组织到ByteBuf中
+            ByteBuf buf = Unpooled.copiedBuffer("hello world".getBytes());
+            ChannelFuture channelFuture = channel.writeAndFlush(buf);
+            channelFuture.sync();
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
     }
 
