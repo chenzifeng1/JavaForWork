@@ -97,10 +97,6 @@ Redis有两种淘汰过期keys的方式：主动和被动
     AOF 文件有序地保存了对数据库执行的所有写入操作， 这些写入操作以 Redis 协议的格式保存， 因此 AOF 文件的内容非常容易被人读懂， 对文件进行分析（parse）也很轻松。 导出（export） AOF 文件也非常简单： 举个例子， 如果你不小心执行了 FLUSHALL 命令， 但只要 AOF 文件未被重写， 那么只要停止服务器， 移除 AOF 文件末尾的 FLUSHALL 命令， 并重启 Redis ， 就可以将数据集恢复到 FLUSHALL 执行之前的状态。
 
 3. 混合使用的时候，redis优先使用aof文件来进行数据恢复。因为aof的数据相对较全。
-  
-
-  
-
 
 ## redis事务
 watch multi exec

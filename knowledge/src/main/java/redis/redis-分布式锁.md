@@ -77,5 +77,6 @@ end
 >3. 当客户端重试获取锁时，需要等待一段时间，这个时间必须大于从大多数Redis实例成功获取锁使用的时间，以最大限度地避免脑裂。.
 
 
-
+## Redission
+java版的redis分布式锁的实现包 [Redission](https://github.com/redisson/redisson)
 

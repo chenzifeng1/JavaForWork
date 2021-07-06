@@ -1,5 +1,8 @@
 package cas.reentrantlock;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @ProjectName: spring-security
  * @ClassName: ReentrantLock
@@ -10,4 +13,21 @@ package cas.reentrantlock;
  **/
 
 public class ReentrantLockTest {
+
+
+    public static void main(String[] args) {
+
+        Task task = new Task();
+        
+
+    }
+
+    static class Task implements Callable<String>{
+
+        @Override
+        public String call() throws Exception {
+            TimeUnit.SECONDS.sleep(2);
+            return "success";
+        }
+    }
 }

@@ -25,3 +25,8 @@ OOM: 看报错的原因
 3. Direct Buffer Memory: 直接内存不足，因为JVM的垃圾回收器不会回收直接内存。考虑间接或者是直接使用了ByteBuffer.allocateDirect()方法，而没有clear导致的
 4. StackOverFlowError:Xss设置太小，但是很可能是程序问题
 
+## 调优
+- Xss: 每个线程分配的虚拟机栈和堆栈大小，一般256K足以，这个的设置会影响java进程中的线程数的多少
+- Xms: 初始化时JAVA进程的堆大小
+- Xmx: JAVA进程的堆可以扩展到的最大值，很多情况下，通常将-Xms和-Xmx设置成一样的，因为当堆不够用而发生扩容时，会发生内存抖动影响程序运行时的稳定性。
+

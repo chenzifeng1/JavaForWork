@@ -1,5 +1,14 @@
 package jvm;
 
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArraySet;
+
 /**
  * @ProjectName:
  * @ClassName: Hello
@@ -10,6 +19,17 @@ package jvm;
  **/
 
 public class Hello {
+
+    HashMap<String,String> hashMap = new HashMap<String, String>();
+    ConcurrentHashMap<String,String> concurrentHashMap = new ConcurrentHashMap<String, String>();
+    ConcurrentSkipListSet<String> css = new ConcurrentSkipListSet<String>();
+    ConcurrentSkipListMap<String,String> csm = new ConcurrentSkipListMap<String, String>();
+    Queue<String> queue = new LinkedList<String>();
+    Deque<String> deque = new LinkedList<>();
+    CopyOnWriteArraySet<String> copyOnWriteArraySet = new CopyOnWriteArraySet<>();
+    ConcurrentSkipListSet<String> concurrentSkipListSet = new ConcurrentSkipListSet<>();
+
+
 
     public void sayHi(){
         System.out.println("Hello World!");
@@ -25,4 +45,6 @@ public class Hello {
 
         Hello h = new Hello();
     }
+
+
 }
