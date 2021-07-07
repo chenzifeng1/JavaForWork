@@ -1,5 +1,7 @@
 package jvm;
 
+
+
 /**
  * @ProjectName:
  * @ClassName: JVM_01_Test
@@ -23,7 +25,7 @@ public class JVM_01_Test {
 
     public static void showClassLoader(){
         System.out.println(String.class.getClassLoader() );
-        System.out.println(sun.misc.Unsafe.class.getClassLoader());
+//        System.out.println(Unsafe.class.getClassLoader());
 
         System.out.println(JVM_01_Test.class.getClassLoader());
         System.out.println(JVM_01_Test.class.getClassLoader().getParent());
