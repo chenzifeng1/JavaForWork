@@ -30,7 +30,7 @@ public class Test_02_Map {
      * 准备相同的测试用例
      */
     static {
-
+        concurrentHashMap.mappingCount();
         for (int i = 0; i < StaticValue.BIG_COUNT; i++) {
             keys[i] = UUID.randomUUID();
             values[i] = UUID.randomUUID();
