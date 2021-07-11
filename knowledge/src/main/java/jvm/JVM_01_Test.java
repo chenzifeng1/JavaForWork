@@ -17,6 +17,8 @@ public class JVM_01_Test {
     public static final String PATH_EXT = "java.ext.dirs";
     public static final String PATH_APP = "java.class.path";
 
+
+
     public static void main(String[] args) {
 //        showClassLoader();
         showClassLoaderScope();
