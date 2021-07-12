@@ -1,8 +1,12 @@
 # AQS深度解析
 
-1. state
-2. 双向等待链表
-3. varHandle : 普通属性原子性操作 2. 效率比反射要高，直接操作二进制码
+1. state: 
+   这个是一个volatile变量，表示当前锁的使用状态，如果state是0，表示当前锁没有在使用。如果state>0,说明该锁已经被其他线程获取了。
+   但是光凭一个state是无法解决锁的可重入问题的，因此我们需要另外一个东西，来判断当前获取锁的线程是不是已经持有锁的线程。
+   
+2. exclusiveOwnerThread： 这个是AQS父类`AbstractOwnableSynchronizer`的属性，表示持有同步锁的线程是哪一个。
+3. 双向等待队列CLH：在ReentrantLock实现公平锁的时候，如果一个线程没有成功获得锁，则加入该队列
+4. varHandle : 普通属性原子性操作 2. 效率比反射要高，直接操作二进制码
 
 ## ReentrantLock.lock()
 
@@ -202,6 +206,86 @@
    释放锁过程很简单：1. 将`exclusiveOwnerThread`设为null 2. 将state设为减去releases的值。为何在tryReleases的时候不需要使用CAS操作,
    猜测因为没必要，在state!=0时，其他线程也无法访问到exclusiveOwnerThread，这些变量是线程安全的。
    
+   
 
-      
+## AbstractQueuedSynchronizer与模板方法
+AbstractQueuedSynchronizer中使用了大量的模板方法，比如下面：这些方法都是final方法，即不允许子类进行重写，
+但是这些方法中使用的很多方法都需要子类来实现。
+
+```java
+public abstract class AbstractQueuedSynchronizer
+    extends AbstractOwnableSynchronizer
+    implements java.io.Serializable {
+
+   /**
+    * 以独占模式进行获取，忽略中断，这个用于实现Lock.lock
+    * @param arg
+    */
+   public final void acquire(int arg) {
+      // tryAcquire()这个方法就是需要子类来实现的，获取的时候是以公平锁的方式获取还是以非公平锁的方式来获取
+      if (!tryAcquire(arg) &&
+              acquireQueued(addWaiter(Node.EXCLUSIVE), arg))
+         selfInterrupt();
+   }
+
+
+   /**
+    * 
+    * @param arg
+    * @throws InterruptedException
+    */
+   public final void acquireInterruptibly(int arg)
+           throws InterruptedException {
+      if (Thread.interrupted())
+         throw new InterruptedException();
+      if (!tryAcquire(arg))
+         doAcquireInterruptibly(arg);
+   }
+
+   
+   public final boolean tryAcquireNanos(int arg, long nanosTimeout)
+           throws InterruptedException {
+      if (Thread.interrupted())
+         throw new InterruptedException();
+      return tryAcquire(arg) ||
+              doAcquireNanos(arg, nanosTimeout);
+   }
+
+
+   public final boolean release(int arg) {
+      if (tryRelease(arg)) {
+         Node h = head;
+         if (h != null && h.waitStatus != 0)
+            unparkSuccessor(h);
+         return true;
+      }
+      return false;
+   }
+
+   
+   public final void acquireShared(int arg) {
+      if (tryAcquireShared(arg) < 0)
+         doAcquireShared(arg);
+   }
+
+
+   public final void acquireSharedInterruptibly(int arg)
+           throws InterruptedException {
+      if (Thread.interrupted())
+         throw new InterruptedException();
+      if (tryAcquireShared(arg) < 0)
+         doAcquireSharedInterruptibly(arg);
+   }
+
+  
+   public final boolean tryAcquireSharedNanos(int arg, long nanosTimeout)
+           throws InterruptedException {
+      if (Thread.interrupted())
+         throw new InterruptedException();
+      return tryAcquireShared(arg) >= 0 ||
+              doAcquireSharedNanos(arg, nanosTimeout);
+   }
+    
+}
+```
    
