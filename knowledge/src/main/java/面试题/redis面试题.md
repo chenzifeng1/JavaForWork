@@ -100,3 +100,11 @@ Redis有两种淘汰过期keys的方式：主动和被动
 
 ## redis事务
 watch multi exec
+
+
+### redis 数据结构底层实现
+- String:
+- list: 
+- hash
+- set
+- zset
