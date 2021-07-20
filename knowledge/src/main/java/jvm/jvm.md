@@ -294,7 +294,9 @@ JVM层面：
 
 ### 对象如何分配
 
+
 ### Object o = new Object在内存中占多少个字节
+
 
 ## 运行时数据区 (Run-Time Data Area)
 

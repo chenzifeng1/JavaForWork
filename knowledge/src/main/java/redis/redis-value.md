@@ -20,8 +20,19 @@ redis的数据类型如下：
 
 - String: 可以是字符串，也可以是数字，还可以是bitmap，redis是二进制安全的，它会将这些数据存储成二进制的格式，只有生产和消费的双方编码格式相同， 那么就可以获取到统一的数据。
     1. 字符串：
-    2. 数字
-    3. bitmap
+    2. 数字:
+    3. bitmap;
+
+    redis对于字符遍历底层有三种编码形式：int,embstr,raw ,如果我们想验证一下，可以使用`object encoding key`来确定一个string类型的编码方式  
+    - int:当存储的字符串全是数字时，此时使用int方式来存储；
+    - embstr：当存储的字符串长度小于44个字符时，此时使用embstr方式来存储；
+    - raw：当存储的字符串长度大于44个字符时，此时使用raw方式来存储；
+
+   Redis中的字符串称之为`Simple Dynamic String`.  
+    embstr中`RedisObject`对象头和`sds`是连在一起的  
+    raw中`RedisObject`对象头和`sds`是分开的
+
+
 - List: 集合，redis通过提供集合这种类型来做到为一个key存储多个元素，redis为list这种value的数据结构提供了两个指针: head与tail（头指针，尾指针）。
   基于这两个指针，redis可以将list来当作多种数据结构来用
     1. 栈：使用同向命令来进行读写数据，可以模拟栈的操作`lpush`+`lpop`或者`rpush`+`rpop`
@@ -43,6 +54,8 @@ redis的数据类型如下：
     1. 点赞的内容，设置一个key来作为你的点赞，然后不同的filed作为点赞名，value是点赞内容
     2. 收藏的内容：设置一个key来作为你的收藏，然后不同的filed作为收藏名，value是收藏内容
     3. 详情页：将给物品的详情的不同属性通过hash来存储
+    
+Hash这种value结构的底层实现是使用了 字典+HashTable
 
 - set: 首先考虑，set与list有什么不同，它们的区别决定了它们的定位和使用的业务场景。list是根据插入顺序排序的线性集合，元素可以重复。 set是`无序`，`去重`的元素集合。那么我们可以如何使用set呢？
     1. 无序，去重： 做去重统计
