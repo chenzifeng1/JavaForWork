@@ -12,27 +12,35 @@ import java.util.concurrent.TimeUnit;
  **/
 public class Test_ThreadLocal {
 
-    static Person person = new Person("张三");
+    static Person zhangsan = new Person("张三");
 
     public static void main(String[] args) {
         ThreadLocal<Person> personThreadLocal = new ThreadLocal<>();
 
-        personThreadLocal.set(person);
+        personThreadLocal.set(zhangsan);
 
-        new Thread(()->{
+        Thread thread1 = new Thread(() -> {
             TimeUtils.timeUintSleep(3, TimeUnit.SECONDS);
             // 线程独有 因此在主线程设置的Person对象 在子线程拿不到对应的值
             personThreadLocal.set(new Person(Thread.currentThread().getName()));
-            System.out.println(personThreadLocal.get().getName());
             personThreadLocal.set(new Person("czf"));
-        }).start();
+            Person person = personThreadLocal.get();
+            System.out.println(Thread.currentThread().getName() + " : " + person.getName());
+        },"thread1");
 
 
-        new Thread(()->{
+        Thread thread2 = new Thread(() -> {
             TimeUtils.timeUintSleep(1, TimeUnit.SECONDS);
             personThreadLocal.set(new Person(Thread.currentThread().getName()));
             personThreadLocal.get().setName("李四");
-        }).start();
+            Person person = personThreadLocal.get();
+            System.out.println(Thread.currentThread().getName() + " : " + person.getName());
+        },"thread2");
+
+        thread1.start();
+        thread2.start();
+        Person person = personThreadLocal.get();
+        System.out.println(Thread.currentThread().getName() + " : " + person.getName());
 
 
     }

@@ -38,7 +38,6 @@ public class T4_SocketNIO {
         try {
             //接受客户端的连接
             Thread.sleep(1000);
-
             // 服务端开启监听，接受客户端
             ServerSocketChannel ss = ServerSocketChannel.open();
             // 绑定端口
