@@ -26,8 +26,9 @@ public class ReentrantLockT04 implements Runnable{
     @Override
     public  void run(){
         for (int i = 0; i < StaticValue.HUNDRED; i++) {
+            lock.lock();
             try {
-                lock.lock();
+
                 System.out.println(Thread.currentThread().getName()+" 获得锁");
             }finally {
                 lock.unlock();

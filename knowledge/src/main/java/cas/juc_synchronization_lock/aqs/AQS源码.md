@@ -116,7 +116,7 @@
    这个方法就是将当前线程加到等待队列的尾部： 这里有一个双重循环，内循环是判断tail是否为空，如果为空则调用`initializeSyncQueue`,
    这个方法是进行一个CAS操作，将当前节点从Null变为一个虚拟队列的节点。这个方法成功执行之后下一次循环就会跳出内层循环。 外层循环的主要操作就是通过CAS操作把尾部设为新的节点。
 
-5. 当新的节点已经再尾部时，就会执行`acquireQueued`。
+5. 当新的节点已经在尾部时，就会执行`acquireQueued`。
    ```java
    public abstract class AbstractQueuedSynchronizer extends AbstractOwnableSynchronizer implements Serializable {
         final boolean acquireQueued(AbstractQueuedSynchronizer.Node node, int arg) {

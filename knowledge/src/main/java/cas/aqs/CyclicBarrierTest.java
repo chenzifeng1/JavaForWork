@@ -30,7 +30,6 @@ public class CyclicBarrierTest {
         CyclicBarrier barrier = new CyclicBarrier(20,()-> System.out.printf("人满，发车"));
 
         for (int i = 0; i < StaticValue.HUNDRED; i++) {
-
             new Thread(() -> {
                 System.out.println(Thread.currentThread().getName()+ "上车");
                 try {
@@ -40,7 +39,6 @@ public class CyclicBarrierTest {
                 } catch (BrokenBarrierException e) {
                     e.printStackTrace();
                 }
-
             }).start();
 
         }

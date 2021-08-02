@@ -26,7 +26,6 @@ public class Test_WeakReference {
         threadLocal.set(new M());
         threadLocal.remove();
 
-
     }
 
 

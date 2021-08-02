@@ -23,6 +23,7 @@ public class ReentrantLockT03 {
     public static ReentrantLock staticLock = new ReentrantLock();
 
     private void m1(){
+
         try {
             staticLock.lockInterruptibly();
             for (int i = 0; i < StaticValue.TEN; i++) {

@@ -14,9 +14,6 @@ public class Test_Wait {
 
     public static void main(String[] args) {
 
-
-
-
     }
 
 
