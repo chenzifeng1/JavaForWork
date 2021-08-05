@@ -225,3 +225,5 @@ create table enum_test(animal enum("dog","cat","bird","fish"))
 3. MySql的数据类型可以精确到字段，因此可以根据需要对字段设置对应的字符集，来减少数据整体存储量
 
 一般选择utf8mb4这样的编码格式
+
+
