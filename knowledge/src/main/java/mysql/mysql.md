@@ -227,3 +227,10 @@ create table enum_test(animal enum("dog","cat","bird","fish"))
 一般选择utf8mb4这样的编码格式
 
 
+## 常用命令
+1. 导入sql文件
+`source /path/xx.sql`
+   
+2. 创建索引
+`alter table [table_name] add index [index_name](column1,column2...) `
+
