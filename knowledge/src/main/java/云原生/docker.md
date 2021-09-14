@@ -85,5 +85,20 @@ Linux 安装 （以Centos为例）：
    sudo systemctl restart docker
    ```
 
+### Tomcat
 
+Tomcat:lastest 容器内部结构，包括三部分
+- Linux(Red Hat4.8.5-28) : Linux对应的版本非常轻量，不会带来太多负担，甚至轻量化到只能支持容器内的其他组件。
+  但是正是由于有这个操作系统的存在，对于资源的控制和操作就有了保障。
+- jdk(1.8.0_222)
+- Appche Tomcat/8.5.46
 
+### 在容器中执行命令：
+
+- docker exec [-it] 容器id 命令
+    1. exec 在对应容器中执行命令
+    2. -it 以交互式的方式执行命令，即如果我们后期需要在这个基础上对容器执行其他命令  
+   实例： docker exec -it ******** /bin/bash
+       
+
+    
