@@ -100,5 +100,19 @@ Tomcat:lastest 容器内部结构，包括三部分
     2. -it 以交互式的方式执行命令，即如果我们后期需要在这个基础上对容器执行其他命令  
    实例： docker exec -it ******** /bin/bash
        
+### Dockerfile 镜像描述文件
 
+- Dockerfile是一个包含 用于镜像的命令 的文本文档
+- Docker 通过读取Dockerfile中的指令 按步自动生成镜像
+- 用于构建镜像的命令： `docker build -t 机构/镜像名<:tag> Dockerfile目录`
+
+### Docker自动部署Tomcat应用
+对应Dockerfile里面的内容，
+- FROM tomcat:lastest  # FROM 用于构建基础镜像
+- MAINTAINER xxx.com  #  说明当前镜像 是由哪个人或者机构来维护的
+- WORKDIR /usr/local/tomcat/app # 切换工作目录
+- ADD docker-web ./docker-web
+
+
+  
     
