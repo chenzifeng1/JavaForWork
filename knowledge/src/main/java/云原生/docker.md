@@ -114,4 +114,15 @@ Tomcat:lastest 容器内部结构，包括三部分
 - ADD docker-web ./docker-web
 
 docker build -t  机构名或者个人id/镜像的名字:版本 /目录（绝对或者相对路径）
+
+# 镜像分层
+docker每执行一步dockerfile的命令都会创建一个快照，这个快照是以临时容器的方式存在的。可以认为每个临时容器
+都是当时系统的快照。这些临时容器是可以重用的，即创建不同镜像容器的时候，可以重用之前载入过的临时容器。
     
+## Dockerfile基础命令
+- FROM: 基于基准镜像，这个是每个dockerfile必须有的命令。
+  1. FROM centos  # 基于centos这个基础镜像进行构建
+  2. FROM scratch # 不依赖任何基础镜像，从零构建  
+  注  尽量使用官方的base image，尽量不要使用来临不明的基础镜像
+     
+- LABEL & MAINTAINER： 说明信息
