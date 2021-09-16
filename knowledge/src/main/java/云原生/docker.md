@@ -113,6 +113,5 @@ Tomcat:lastest 容器内部结构，包括三部分
 - WORKDIR /usr/local/tomcat/app # 切换工作目录
 - ADD docker-web ./docker-web
 
-
-  
+docker build -t  机构名或者个人id/镜像的名字:版本 /目录（绝对或者相对路径）
     
