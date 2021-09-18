@@ -125,4 +125,22 @@ docker每执行一步dockerfile的命令都会创建一个快照，这个快照�
   2. FROM scratch # 不依赖任何基础镜像，从零构建  
   注  尽量使用官方的base image，尽量不要使用来临不明的基础镜像
      
-- LABEL & MAINTAINER： 说明信息
+- LABEL & MAINTAINER： 说明信息，对镜像进行描述 并不会产生实际的功能信息
+  1. MAINTAIER: 表明该镜像的维护组织或者个人  
+  2. LABEL version="1.0:  
+  3. LABEL description="镜像描述"
+  
+- WORKDIR 设置工作目录
+  1. WORKDIR /home/work
+  2. WORKDIR /home/work/newdir # 具有创建目录的作用  
+   建议: 尽量使用绝对路径    
+
+- ADD & COPY 复制文件 （两者功能有重合）
+  1. ADD hello / #复制hello到根目录
+  2. ADD test.tar.gz / #添加到根目录并进行解压
+  3. ADD 除了复制，还具备添加远程文件的功能
+    
+- ENV 设置环境常量
+  1. ENV JAVA_HOME /usr/local/openjdk1.8
+  2. RUN ${JAVA_HOME}/bin/java -jar test.jar # 可以通过${}来引用设置过环境常量  
+  注： 尽量使用环境常量来提高程序的维护性   
