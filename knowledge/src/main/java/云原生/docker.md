@@ -144,3 +144,49 @@ docker每执行一步dockerfile的命令都会创建一个快照，这个快照�
   1. ENV JAVA_HOME /usr/local/openjdk1.8
   2. RUN ${JAVA_HOME}/bin/java -jar test.jar # 可以通过${}来引用设置过环境常量  
   注： 尽量使用环境常量来提高程序的维护性   
+
+
+## docker 启动命令
+  ![启动命令](../../img/docker/启动命令.PNG)
+- RUN： 在build构建时执行，一旦镜像被创建之后，就是只读的，不允许被修改了。
+  RUN命令是在创建镜像时，修改镜像内部的文件和资源
+- ENTRYPOINT/CMD：在创建容器时，在容器内部执行命令
+
+### RUN
+![RUN命令格式](../../img/docker/命令格式.PNG)
+- Shell命令格式： RUN yum install -y vim
+  1. 使用shell执行时，当前Shell是父进程，生成一个子Shell进程
+  2. 脚本命令会在子shell进程中执行，执行完毕之后退出子shell返回父进程shell，不会对父进程产生影响  
+- Exec格式： RUN ["yum","install","-y","vim"]
+  1. 使用Exec方式执行，会创建Exec进程替代当前Shell进程，并保持PID不变
+  2. 执行完毕之后，直接退出，并不会退回到之前的进程环境中
+    
+推荐使用Exec的方式来执行命令
+
+### ENTRYPOINT
+1. ENTRYPOINT（入口）用于在创建容器时执行命令
+2. Dockerfile中如果包含了多个ENTRYPOINT，则只有最后一个ENTRYPOINT会被执行
+
+例：  ENTRYPOINT ["ps"] #推荐使用Exec命令格式
+
+### CMD 默认命令
+1. CMD设置默认执行的命令
+2. Dockerfile中出现多个CMD，默认最后一个会被执行
+3. 如果容器启动时附件命令，则CMD被忽略
+
+例： CMD ["ps","-ef"]
+
+注： ENTRYPOINT一定会被运行，而CMD不一定会被运行
+
+## demo
+1. 创建一个Dockerfile,注意Dockerfile大小写敏感 `vim Dockerfile`  
+![Dockerfile](../../img/docker/Dockerfile-执行命令.PNG)  
+   内容很简单：基础镜像是centos，执行两个打印命令
+   
+2. 使用写好的Dockerfile构建镜像 `docker build -t chenzifeng.io/docker_run .`
+![构建docker镜像](../../img/docker/构建镜像.PNG)
+   
+我们可以注意看一下，构建镜像的过程分为了散布，对应Dockerfile中的三个命令，其中RUN命令是被执行了，而CMD命令则没有执行
+
+
+
