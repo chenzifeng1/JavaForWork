@@ -188,5 +188,36 @@ docker每执行一步dockerfile的命令都会创建一个快照，这个快照�
    
 我们可以注意看一下，构建镜像的过程分为了散布，对应Dockerfile中的三个命令，其中RUN命令是被执行了，而CMD命令则没有执行
 
+## 构建一个Redis镜像
+1. DockerFile:
+    ```dockerfile
+    FROM centos
+    RUN ["yum","install","-y","gcc","gcc-c++","net-tools","make"]
+    WORKDIR /usr/local
+    ADD redis-xx.tar.gz
+    WORKDIR /usr/local/redis-xx/src
+    RUN make & make install
+    WORKDIR /usr/local
+    # 将redis-7000配置文件复制到当前目录下
+    ADD redis-7000.conf .
+    # 暴露7000端口
+    EXPOSE 7000
+    CMD ["redis-server","redis-7000.conf"]
+    ```
+   
+2. 构建镜像 `docker build -t chenzifeng.io/docker-redis .`
+   docker会按照Dockerfile书写的文件进行构建
+   
+3. 构建容器 `docekr run -p 7000:7000 chenzifeng.io/docker-redis`
 
+4. 可以通过 `docker ps` 来查看正在运行的容器
 
+注 ：redis已经提供了对应的官方镜像，可以直接从docket hub上直接拉取
+
+## 容器间Link单向通信
+当容器创建时会生成自己的虚拟IP，外界是无法通过虚拟IP来访问对应容器的，但是同一个docker环境下的各个容器
+可以通过虚拟IP来访问彼此。  
+但是这里有个问题，虚拟IP每次创建容器都会生成，如果使用虚拟IP进行互通，那么很有可能会因为容器的上下线导致IP改变而出问题。  
+我们可以通过给容器命名，这样通过容器名称来进行通讯的时候，docker会根据容器名字就行动态连接
+`docker run -d --name [container-name] container`  
+之后我们可以使用`docker inspect [container-id]`来获取对应容器的元数据信息
