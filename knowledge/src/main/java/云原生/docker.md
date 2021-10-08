@@ -221,3 +221,28 @@ docker每执行一步dockerfile的命令都会创建一个快照，这个快照�
 我们可以通过给容器命名，这样通过容器名称来进行通讯的时候，docker会根据容器名字就行动态连接
 `docker run -d --name [container-name] container`  
 之后我们可以使用`docker inspect [container-id]`来获取对应容器的元数据信息
+
+## 容器间双向通-Bridge网桥
+![](../../img/docker/Bridge-网桥.PNG)
+
+1. 网桥充当了docker环境与宿主机之间的通信源。docker中的容器可以通过网桥与物理网卡进行通信，即可以与外界网络进行通信。
+  同时外界网络也可以通过网桥访问到docker环境
+   
+2. 网桥另一个作用：对容器在网络层进行分组：将多个容器绑定到同一个网桥上，那么这一组容器之间就可以天然的进行互联互通。
+
+命令如下：
+
+- docker network ls : docker network是docker网路服务层面的命令，跟ls可以列出docker当前底层网络服务的明细
+
+- docker network create -d bridge [bridge-name] :创建并命名一个网桥服务
+
+- docker network connect [bridge-name] [container-name] : 连接网桥和容器，或者说将容器绑定到该网桥上
+
+
+## Volume容器间共享数据
+当我们多个容器之间需要进行数据共享时，比如说，多个tomcat容器都有同一个web页面，如果不做数据共享，那么当web页面发生变化时，
+就得一个个容器进行替换，这样就比较缺乏效率。
+volume的实际上是在宿主机的磁盘空间中开辟一块空间来存在数据，使得不同容器都可以引用上面的数据进行共享
+
+
+
