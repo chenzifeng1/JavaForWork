@@ -244,5 +244,22 @@ docker每执行一步dockerfile的命令都会创建一个快照，这个快照�
 就得一个个容器进行替换，这样就比较缺乏效率。
 volume的实际上是在宿主机的磁盘空间中开辟一块空间来存在数据，使得不同容器都可以引用上面的数据进行共享
 
+### 通过设置-v 挂载宿主机目录
+- 格式: docker run --name 容器名 -v 宿主机路径:容器内挂在路径 镜像名
+- 实例: docker run --name t1 -v /usr/webapp/:/usr/local/tomcat/webapps tomcat
+
+这样所有在宿主机对应目录下的文件的改变都会使对应的容器目录下的文件改变，或者说通过-v让容器对应路径上的文件指向了宿主机的路径文件
+但是这种方法比较麻烦的地方就是，在书写 宿主机路径和容器内对应路径的挂在关系时，错一点都会使挂载失败
+### 通过设置--volume-from共享容器内挂载点
+1. 创建共享容器  `docker create webpage -v /webapps:/tomcat/webapps tomcat /bin/true`  
+  创建一个容器，这个容器本身只是被创建出来，并不运行。这个命令的主要目的就是定义一个挂载点
+2. 共享容器挂载点  `docker run --volume-from webpage --name t1 -d tomcat`    
+   创建一个运行容器，并申明该容器的挂载点为共享容器webpage。
+   
+我理解的是相比于第一种方法，其实第二种方法像是定义了一个常量容器，来作为挂载点信息
+
+
+
+
 
 
