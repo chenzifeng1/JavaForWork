@@ -258,7 +258,12 @@ volume的实际上是在宿主机的磁盘空间中开辟一块空间来存在�
    
 我理解的是相比于第一种方法，其实第二种方法像是定义了一个常量容器，来作为挂载点信息
 
+## 容器编排工具 docker-compose
 
+- Docker-compose： 单机多容器部署工具
+- 通过yml文件定义多容器如何部署
+- WIN/MAC默认提供docker-compose，linux需要手动安装
+m
 
 
 
