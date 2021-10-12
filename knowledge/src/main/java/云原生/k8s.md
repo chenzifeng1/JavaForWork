@@ -20,8 +20,23 @@
     其中，Pause容器是Pod必备基础容器，Pause有两个职能，
   一个是提供共享的网络空间，另一个是提供共享的Volume挂载数据卷 
 - Container
-- Label
-- Replication
-- Service
+- Label ：说明性的标签，相当于每个pod的别名。k8s主节点通过pod名称对其进行操作
+- Replication Controller（复制控制器）：存在于主节点上，对pod数量进行监控。当k8s中的指定label的pod少于预期数量，
+  Replication Controller就会复制对应的pod到宿主机。同时Replication Controller还会监控Pod是否有响应，如果没有响应了，
+  Replication Controller就会将该pod踢出。
+- Service： 跨主机、跨容器战之间的网络通信。逻辑上将容器进行分组，使得同一个service内部的容器无障碍通信
 - Node：
+
+## 实现
+k8s的Node中，存在三个程序：
+1. docker
+2. kubelet
+3. kube-proxy： 实现跨容器的网络通信，容器A消息发送个kube-proxy，然后kube-proxy将消息转发到对应的容器内部。
+
+## 安装
+### 安装方式
+1. 使用kubeadmin通过离线镜像安装（推荐）
+2. 使用阿里公有云平台k8s（不免费）
+3. 通过yum官方仓库安装，版本较老
+4. 二进制安装包形式进行安装，kubeasz（github开源项目，有风险）
  
